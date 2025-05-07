@@ -60,6 +60,19 @@ class LoggingConfig(BaseModel):
         return logging.getLevelNamesMapping()[self.log_level.upper()]
 
 
+class AuthJWT(BaseModel):
+    """
+    JSON web token authorization settings.
+    """
+
+    lifetime_seconds: int = 3600
+    private_key_path: Path = BASE_DIR / "src" / "auth" / "certs" / "jwt-private.pem"
+    public_key_path: Path = BASE_DIR / "src" / "auth" / "certs" / "jwt-public.pem"
+    algorithm: str = config("ALGORITHM")
+    reset_password_token_secret: str = config("RESET_PASSWORD_TOKEN_SECRET")
+    verification_token_secret: str = config("VERIFICATION_TOKEN_SECRET")
+
+
 class Settings(BaseSettings):
     """
     Application base settings.
@@ -69,6 +82,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     db: DatabaseConfig = DatabaseConfig()
     logging: LoggingConfig = LoggingConfig()
+    auth_jwt: AuthJWT = AuthJWT()
 
 
 settings = Settings()
