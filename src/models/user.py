@@ -1,6 +1,8 @@
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+from sqlalchemy import Boolean
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped
+from sqlalchemy.testing.schema import mapped_column
 
 from src.models.base import Base
 
@@ -14,7 +16,9 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
             Defaults to False.
     """
 
-    is_manager: Mapped[bool] = False
+    is_manager: Mapped[bool] = mapped_column(
+            Boolean, default=False, nullable=False
+        )
 
     @classmethod
     def get_db(cls, session: AsyncSession):
