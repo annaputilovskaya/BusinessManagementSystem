@@ -1,11 +1,12 @@
+import logging
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from starlette.config import Config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 config = Config(BASE_DIR / ".env")
 
 
@@ -38,6 +39,26 @@ class DatabaseConfig(BaseModel):
     pool_size: int = 50
     max_overflow: int = 10
 
+class LoggingConfig(BaseModel):
+    """
+    Logging settings.
+    """
+
+    log_level: Literal[
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "critical",
+    ] = "info"
+    log_format: str = (
+        "[%(asctime)s.%(msecs)03d] %(levelname)-8s %(funcName)20s %(module)s:%(lineno)d - %(message)s"
+    )
+
+    @property
+    def log_level_value(self) -> int:
+        return logging.getLevelNamesMapping()[self.log_level.upper()]
+
 
 class Settings(BaseSettings):
     """
@@ -47,6 +68,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
     run: RunConfig = RunConfig()
     db: DatabaseConfig = DatabaseConfig()
+    logging: LoggingConfig = LoggingConfig()
 
 
 settings = Settings()
