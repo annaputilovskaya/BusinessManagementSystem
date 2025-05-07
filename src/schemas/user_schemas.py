@@ -1,4 +1,5 @@
 from fastapi_users import schemas
+from fastapi_users.schemas import model_dump
 
 
 class UserRead(schemas.BaseUser[int]):
@@ -24,6 +25,33 @@ class UserCreate(schemas.BaseUserCreate):
 
     is_manager: bool = False
 
+    def create_update_dict(self):
+        """
+        Creates a dictionary for creating user information.
+
+        This method generates a dictionary representation of the user
+        instance, suitable for creating user information. It excludes
+        unset fields and specific attributes that should not be included
+        in the created payload.
+
+        Returns:
+            dict: A dictionary containing the user's fields, excluding
+            unset values and protected attributes.
+        """
+
+        return model_dump(
+            self,
+            exclude_unset=True,
+            exclude={
+                "id",
+                "is_superuser",
+                "is_active",
+                "is_verified",
+                "oauth_accounts",
+                "is_manager"
+            },
+        )
+
 
 class UserUpdate(schemas.BaseUserUpdate):
     """
@@ -37,3 +65,29 @@ class UserUpdate(schemas.BaseUserUpdate):
         have manager privileges. Defaults to False.
     """
     is_manager: bool = False
+
+    def create_update_dict(self):
+        """
+        Create a dictionary for updating user information.
+
+        Generates a dictionary representation of the user
+        instance, suitable for updating user information. It excludes
+        unset fields and specific attributes that should not be included
+        in the update payload.
+
+        Returns:
+            dict: A dictionary containing the user's fields, excluding
+            unset values and protected attributes.
+        """
+        return model_dump(
+            self,
+            exclude_unset=True,
+            exclude={
+                "id",
+                "is_superuser",
+                "is_active",
+                "is_verified",
+                "oauth_accounts",
+                "is_manager"
+            },
+        )
