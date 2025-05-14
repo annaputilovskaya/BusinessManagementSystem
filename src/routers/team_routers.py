@@ -3,8 +3,9 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_superuser, current_active_verified_user
-from src.models import dbh, User
+from src.models import dbh, User, Team
 from src.schemas.team_schemas import TeamRead
+from src.services.dependencies import get_team_by_id
 from src.services.team_services import add_team, get_all_teams
 
 http_bearer = HTTPBearer(auto_error=False)
@@ -26,3 +27,10 @@ async def get_teams(
         user: User = Depends(current_active_verified_user)
 ):
     return await get_all_teams(session, user)
+
+
+@router.get("/{team_id}", summary="Show team.", response_model=TeamRead)
+async def get_team(
+        team: Team = Depends(get_team_by_id)
+):
+    return team
