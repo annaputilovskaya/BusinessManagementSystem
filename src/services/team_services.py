@@ -116,3 +116,44 @@ async def add_team_id_to_team_members(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"message": "Not enough permissions for the action."}
         )
+
+
+async def remove_team(
+        team: Team,
+        session: AsyncSession,
+        user: User
+) -> dict[str, str]:
+    """
+    Remove a team from the database.
+
+    Deletes the specified Team object from the database
+    if the user has the necessary permissions.
+
+    Args:
+        team (Team): The Team object to be deleted.
+        session (AsyncSession): The database asynchronous session to use for the operation.
+        user (User): The user requesting the deletion. Must have the required permissions.
+
+    Returns:
+        dict[str, str]: A dictionary indicating the result of the deletion with a detail message.
+
+    Raises:
+        HTTPException:
+            - If the user does not have the necessary permissions, a 403 Forbidden error is raised.
+            - If the specified team is not found, a 404 Not Found error is raised.
+    """
+    if user:
+        if team:
+            await session.delete(team)
+            await session.commit()
+            return {"detail": "Team deleted."}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "No team found."}
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."}
+        )
