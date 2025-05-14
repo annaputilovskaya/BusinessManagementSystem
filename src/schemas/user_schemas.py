@@ -12,6 +12,7 @@ class UserRead(schemas.BaseUser[int]):
     """
 
     is_manager: bool = False
+    team_id: int | None = None
 
 
 class UserCreate(schemas.BaseUserCreate):
@@ -24,6 +25,8 @@ class UserCreate(schemas.BaseUserCreate):
     """
 
     is_manager: bool = False
+    team_id: int | None = None
+
 
     def create_update_dict(self):
         """
@@ -48,7 +51,8 @@ class UserCreate(schemas.BaseUserCreate):
                 "is_active",
                 "is_verified",
                 "oauth_accounts",
-                "is_manager"
+                "is_manager",
+                "team_id"
             },
         )
 
@@ -65,6 +69,8 @@ class UserUpdate(schemas.BaseUserUpdate):
         have manager privileges. Defaults to False.
     """
     is_manager: bool = False
+    team_id: int | None = None
+
 
     def create_update_dict(self):
         """
@@ -88,6 +94,7 @@ class UserUpdate(schemas.BaseUserUpdate):
                 "is_active",
                 "is_verified",
                 "oauth_accounts",
-                "is_manager"
+                "is_manager",
+                "team_id"
             },
         )
