@@ -7,7 +7,7 @@ from src.auth.dependencies import current_active_verified_superuser, current_act
 from src.models import dbh, User, Team
 from src.schemas.team_schemas import TeamRead
 from src.services.dependencies import get_team_by_id
-from src.services.team_services import add_team, get_all_teams, add_team_id_to_team_members
+from src.services.team_services import add_team, get_all_teams, add_team_id_to_team_members, remove_team
 
 http_bearer = HTTPBearer(auto_error=False)
 
@@ -45,3 +45,12 @@ async def update_team(
         user: User = Depends(current_active_verified_superuser),
 ):
     return await add_team_id_to_team_members(user_ids, team, session, user)
+
+
+@router.delete("/{team_id}", summary="Delete team.", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_team(
+        team: Team = Depends(get_team_by_id),
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_superuser),
+):
+    return await remove_team(team, session, user)
