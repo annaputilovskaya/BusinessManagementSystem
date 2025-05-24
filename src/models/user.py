@@ -17,13 +17,17 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
             It can be set to None if the user is not associated with any team.
         team (Team): The team associated with this user, linked via
             a relationship.
+        tasks (list[Task]): The list of tasks associated with this user, linked via
+            a relationship.
     """
 
     is_manager: Mapped[bool] = mapped_column(
             Boolean, default=False, nullable=False
         )
     team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id", ondelete="SET NULL"))
-    team: Mapped["Team"] = relationship(back_populates="members")
+
+    team: Mapped["Team"] = relationship("Team", back_populates="members")
+    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="executor")
 
     @classmethod
     def get_db(cls, session: AsyncSession):
