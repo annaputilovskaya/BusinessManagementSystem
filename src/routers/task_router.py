@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.services
 from src.auth.dependencies import current_active_verified_user, http_bearer
 from src.models import dbh, User
 from src.schemas.task_schemas import TaskCreate, TaskRead
@@ -16,3 +17,11 @@ async def create_task(
         user: User = Depends(current_active_verified_user),
 ):
     return await task_services.add_task(task_in, session, user)
+
+
+@router.get("/", summary="Show all tasks.", response_model=list[TaskRead])
+async def get_tasks(
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user)
+):
+    return await src.services.task_services.get_all_tasks(session, user)
