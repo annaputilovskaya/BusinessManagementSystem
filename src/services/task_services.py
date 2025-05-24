@@ -2,8 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User
-from src.models.task import Task
+from src.models import User, Task
 from src.schemas.task_schemas import TaskCreate
 
 
@@ -59,5 +58,36 @@ async def add_task(
     else:
         raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."}
+        )
+
+
+async def get_all_tasks(
+        session: AsyncSession,
+        user: User
+) -> list[Task]:
+    """
+    Retrieve all tasks associated with a specific user.
+
+    Args:
+        session (AsyncSession): The database session to be used for querying.
+        user (User): The user for whom tasks are to be retrieved.
+
+    Returns:
+        list[Task]: A list of Task objects associated with the specified user.
+
+    Raises:
+        HTTPException: If the user does not have the necessary permissions
+            to access the teams, a 403 Forbidden error is raised.
+    """
+    if user:
+        if user.is_manager:
+            tasks = await session.scalars(select(Task).where(Task.team_id == user.team_id))
+        else:
+            tasks = await session.scalars(select(Task).where(Task.user_id == user.id))
+        return list(tasks)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
             detail={"message": "Not enough permissions for the action."}
         )
