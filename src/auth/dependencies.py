@@ -1,4 +1,5 @@
 from fastapi import Depends
+from fastapi.security import HTTPBearer
 from fastapi_users import FastAPIUsers
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -52,3 +53,5 @@ current_active_verified_user = fastapi_users.current_user(active=True, verified=
 current_active_verified_superuser = fastapi_users.current_user(
     active=True, verified=True, superuser=True
 )
+
+http_bearer = HTTPBearer(auto_error=False)
