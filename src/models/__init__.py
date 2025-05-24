@@ -3,10 +3,15 @@ __all__ = (
     "test_dbh",
     "Base",
     "User",
-    "Team"
+    "Team",
+    "Comment",
+    "Task",
+    "Evaluation"
 )
 
 from src.models.base import Base
 from src.models.database import dbh, test_dbh
+from src.models.evaluation import Evaluation
+from src.models.task import Task, Comment
 from src.models.team import Team
 from src.models.user import User
