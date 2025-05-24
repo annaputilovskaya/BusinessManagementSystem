@@ -1,14 +1,12 @@
 from typing import Annotated
 
-from fastapi import HTTPException, Path, Depends
+from fastapi import HTTPException, Path, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 from src.auth.dependencies import current_active_verified_user
-from src.models import User, dbh
-from src.models.task import Task
-from src.models.team import Team
+from src.models import User, dbh, Task, Team
+
 
 
 async def get_team_by_id(
