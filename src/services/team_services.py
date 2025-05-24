@@ -1,7 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 from src.models import User, Team
 
@@ -71,7 +70,6 @@ async def add_team_id_to_team_members(
         user_ids: list[int],
         team: Team,
         session: AsyncSession,
-        user: User,
 ) -> dict[str, str]:
     """Assign a team ID to multiple user members in the database.
 
@@ -82,46 +80,30 @@ async def add_team_id_to_team_members(
         user_ids (list[int]): A list of user IDs to be updated with the team ID.
         team (Team): The Team object that the users will be associated with.
         session (AsyncSession): The database asynchronous session to use for the operation.
-        user (User): The user requesting the update, must have the required permissions.
 
     Returns:
         dict[str, str]: A dictionary indicating the result of the update with a detail message.
 
     Raises:
         HTTPException:
-            - If the user does not have the necessary permissions, a 403 Forbidden error is raised.
             - If no users are found for the provided user IDs, a 404 Not Found error is raised.
-            - If the specified team is not found, a 404 Not Found error is raised.
     """
 
-    if user:
-        if team:
-            users_update = await session.scalars(select(User).where(User.id.in_(user_ids)))
-            if users_update is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail={"message": "No users found."}
-                )
-            else:
-                await session.execute(update(User).where(User.id.in_(user_ids)).values(team_id=team.id))
-                await session.commit()
-                return {"detail": "Team updated."}
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No team found."}
-            )
-    else:
+    users_update = await session.scalars(select(User).where(User.id.in_(user_ids)))
+    if users_update is None:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No users found."}
         )
+    else:
+        await session.execute(update(User).where(User.id.in_(user_ids)).values(team_id=team.id))
+        await session.commit()
+        return {"detail": "Team updated."}
 
 
 async def remove_team(
         team: Team,
         session: AsyncSession,
-        user: User
 ) -> dict[str, str]:
     """
     Remove a team from the database.
@@ -132,28 +114,11 @@ async def remove_team(
     Args:
         team (Team): The Team object to be deleted.
         session (AsyncSession): The database asynchronous session to use for the operation.
-        user (User): The user requesting the deletion. Must have the required permissions.
 
     Returns:
         dict[str, str]: A dictionary indicating the result of the deletion with a detail message.
-
-    Raises:
-        HTTPException:
-            - If the user does not have the necessary permissions, a 403 Forbidden error is raised.
-            - If the specified team is not found, a 404 Not Found error is raised.
     """
-    if user:
-        if team:
-            await session.delete(team)
-            await session.commit()
-            return {"detail": "Team deleted."}
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No team found."}
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
-        )
+
+    await session.delete(team)
+    await session.commit()
+    return {"detail": "Team deleted."}
