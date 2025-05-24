@@ -7,6 +7,7 @@ from starlette import status
 
 from src.auth.dependencies import current_active_verified_user
 from src.models import User, dbh
+from src.models.task import Task
 from src.models.team import Team
 
 
@@ -16,7 +17,7 @@ async def get_team_by_id(
         user: User = Depends(current_active_verified_user)
 ) -> Team:
     """
-    Retrieve a team from the database by its ID.
+    Retrieve a team from the database by ID.
 
     Retrieves a specific Team object from the database
     based on the provided team ID if the user has the necessary permissions.
@@ -30,11 +31,95 @@ async def get_team_by_id(
         Team: The Team object associated with the specified team ID.
 
     Raises:
-        HTTPException: If the user does not have the necessary permissions
-        to access the team, a 403 Forbidden error is raised.
+            HTTPException:
+            - If the user does not have the necessary permissions, a 403 Forbidden error is raised.
+            - If the specified team is not found, a 404 Not Found error is raised.
+    """
+
+    if user:
+        team = await session.scalar(select(Team).where(Team.id == team_id))
+        if not team:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "No teams found."}
+            )
+        return team
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."}
+        )
+
+
+async def get_task_by_id_executor(
+        task_id: Annotated[int, Path],
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user)
+) -> Task:
+    """
+    Retrieve a task from the database by ID if user is not a manager.
+
+    Args:
+        task_id (int): The ID of the task to retrieve.
+        session (AsyncSession): The database session to be used for querying.
+        user (User): The user for whom tasks are to be retrieved.
+
+    Returns:
+        Task: A Task object associated with the specified task ID.
+
+    Raises:
+        HTTPException:
+        - If the user is not an active verified user, a 403 Forbidden error is raised.
+        - If the user does not have the necessary permissions to access the task,
+            or task with such ID does not exist in the database,
+            a 404 Not found error is raised.
     """
     if user:
-        return await session.scalar(select(Team).where(Team.id == team_id))
+        task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "No tasks found."}
+            )
+        return task
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."}
+        )
+
+
+async def get_task_by_id_manager(
+        task_id: Annotated[int, Path],
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user)
+) -> Task:
+    """
+    Retrieve a task from the database by ID if user is a manager.
+
+    Args:
+        task_id (int): The ID of the task to retrieve.
+        session (AsyncSession): The database session to be used for querying.
+        user (User): The user for whom tasks are to be retrieved.
+
+    Returns:
+        Task: A Task object associated with the specified task ID.
+
+    Raises:
+        HTTPException:
+        - If the user is not an active verified user, a 403 Forbidden error is raised.
+        - If the user does not have the necessary permissions to access the task,
+            or task with such ID does not exist in the database,
+            a 404 Not found error is raised.
+    """
+    if user and user.is_manager:
+        task = await session.scalar(select(Task).where(Task.id == task_id, Task.team_id == user.team_id))
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "No tasks found."}
+            )
+        return task
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
