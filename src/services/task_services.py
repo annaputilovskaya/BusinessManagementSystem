@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import User, Task
-from src.schemas.task_schemas import TaskCreate
+from src.schemas.task_schemas import TaskCreate, TaskModify
 
 
 async def add_task(
@@ -134,3 +134,39 @@ async  def get_task_by_id(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"message": "Not enough permissions for the action."}
         )
+
+
+async def change_task(
+        task_in: TaskModify,
+        task: Task,
+        session: AsyncSession,
+        user: User
+) -> Task:
+
+    """
+    Modify an existing task based on the provided input.
+
+    Updates a task's attributes using the values
+    provided in the `task_in` parameter.
+
+    Args:
+        task_in (TaskModify): An object containing the new values
+            for the task attributes.
+        task (Task): The task object to be modified.
+        session (AsyncSession): The database session used for committing the changes.
+        user (User): The user requesting the modification, used for
+            authorization checks.
+
+    Returns:
+        Task: The updated task object after the changes have been applied.
+    """
+    task_dict = task_in.model_dump(exclude_unset=True)
+    if task_in.user_id:
+        executor = await session.scalar(select(User).where(User.id == task_in.user_id, User.team_id == user.team_id))
+        if not executor:
+            del task_dict["user_id"]
+    for name, value in task_dict.items():
+        setattr(task, name, value)
+    await session.commit()
+    await session.refresh(task)
+    return task
