@@ -91,3 +91,46 @@ async def get_all_tasks(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"message": "Not enough permissions for the action."}
         )
+
+
+async  def get_task_by_id(
+        task_id: int,
+        session: AsyncSession,
+        user: User
+) -> Task:
+    """
+    Retrieve a task from the database by ID.
+
+    Args:
+        task_id (int): The ID of the task to retrieve.
+        session (AsyncSession): The database session to be used for querying.
+        user (User): The user for whom tasks are to be retrieved.
+
+    Returns:
+        Task: A Task object associated with the specified task ID.
+
+    Raises:
+        HTTPException:
+        - If the user is not an active verified user, a 403 Forbidden error is raised.
+        - If the user does not have the necessary permissions to access the task,
+            or task with such ID does not exist in the database,
+            a 404 Not found error is raised.
+
+    """
+    if user:
+        if user.is_manager:
+            task = await session.scalar(select(Task).where(Task.id == task_id, Task.team_id == user.team_id))
+        else:
+            task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
+
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "No tasks found."}
+            )
+        return task
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."}
+        )
