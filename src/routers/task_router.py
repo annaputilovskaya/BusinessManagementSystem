@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.services
 from src.auth.dependencies import current_active_verified_user, http_bearer
 from src.models import dbh, User
 from src.schemas.task_schemas import TaskCreate, TaskRead
@@ -24,4 +25,12 @@ async def get_tasks(
         session: AsyncSession = Depends(dbh.session_getter),
         user: User = Depends(current_active_verified_user)
 ):
-    return await src.services.task_services.get_all_tasks(session, user)
+    return await task_services.get_all_tasks(session, user)
+
+
+@router.get("/{task_id}", summary="Show task.", response_model=TaskRead)
+async def get_task(
+        task_id: Annotated[int, Path],
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user)):
+    return await task_services.get_task_by_id(task_id, session, user)
