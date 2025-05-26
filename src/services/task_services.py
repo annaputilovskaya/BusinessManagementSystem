@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import User, Task
-from src.schemas.task_schemas import TaskCreate, TaskModify
+from src.schemas.task_schemas import TaskCreate, TaskModify, TaskUpdate
 
 
 async def add_task(
@@ -169,4 +169,26 @@ async def change_task(
         setattr(task, name, value)
     await session.commit()
     await session.refresh(task)
+    return task
+
+
+async def progress_task(
+        task_in: TaskUpdate,
+        task: Task,
+) -> Task:
+    """
+    Updates the progress of a given task.
+
+    Takes a task update input and a current task instance,
+    processes the update, and returns the updated task.
+
+    Args:
+        task_in (TaskUpdate): An object containing the details of the task update,
+            such as status changes.
+        task (Task): The current task instance that is to be updated.
+
+    Returns:
+        Task: The updated task instance after applying the progress update.
+    """
+    task.status = task_in.status
     return task
