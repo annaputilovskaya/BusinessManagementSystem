@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user, http_bearer
@@ -62,3 +62,11 @@ async def add_comment(
         user: User = Depends(current_active_verified_user)
 ):
     return await task_services.comment_task(comment_in, task_id, session, user)
+
+
+@router.delete("/{task_id}", summary="Delete task.", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(
+        task: Task = Depends(dependencies.get_task_by_id_manager),
+        session: AsyncSession = Depends(dbh.session_getter),
+):
+    return await task_services.remove_task(task, session)
