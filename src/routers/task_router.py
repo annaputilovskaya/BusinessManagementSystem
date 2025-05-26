@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user, http_bearer
 from src.models import dbh, User, Task
-from src.schemas.task_schemas import TaskCreate, TaskRead, TaskModify
+from src.schemas.task_schemas import TaskCreate, TaskRead, TaskModify, TaskUpdate
 from src.services import task_services, dependencies
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"], dependencies=[Depends(http_bearer)])
@@ -44,3 +44,11 @@ async def modify_task(
         user: User = Depends(current_active_verified_user)
 ):
     return await task_services.change_task(task_in, task, session, user)
+
+
+@router.patch("/{task_id}/status", summary="Change status.", response_model=TaskRead)
+async def update_task(
+        task_in: TaskUpdate,
+        task: Task = Depends(dependencies.get_task_by_id_executor),
+):
+    return await task_services.progress_task(task_in, task)
