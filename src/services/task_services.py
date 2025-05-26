@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User, Task
-from src.schemas.task_schemas import TaskCreate, TaskModify, TaskUpdate
+from src.models import User, Task, Comment
+from src.schemas.task_schemas import TaskCreate, TaskModify, TaskUpdate, CommentCreate
 
 
 async def add_task(
@@ -176,6 +176,7 @@ async def progress_task(
         task_in: TaskUpdate,
         task: Task,
 ) -> Task:
+
     """
     Updates the progress of a given task.
 
@@ -192,3 +193,24 @@ async def progress_task(
     """
     task.status = task_in.status
     return task
+
+
+def create_comment(
+        comment_in: CommentCreate,
+        task_id: int,
+        user: User
+) -> Comment:
+
+    """
+    Creates a new comment for a specified task.
+
+    Args:
+        comment_in (CommentCreate): An object containing the text of the comment.
+        task_id (int): The ID of the task for which the comment is being created.
+        user (User): The user who is creating the comment.
+
+    Returns:
+        Comment: The newly created comment associated with the specified task.
+    """
+    new_comment = Comment(text=comment_in.text, task_id=task_id, user_id=user.id)
+    return new_comment
