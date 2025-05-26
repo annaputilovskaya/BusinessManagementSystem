@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user, http_bearer
 from src.models import dbh, User, Task
-from src.schemas.task_schemas import TaskCreate, TaskRead, TaskModify, TaskUpdate
+from src.schemas.task_schemas import TaskCreate, TaskRead, TaskModify, TaskUpdate, CommentCreate
 from src.services import task_services, dependencies
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"], dependencies=[Depends(http_bearer)])
@@ -52,3 +52,13 @@ async def update_task(
         task: Task = Depends(dependencies.get_task_by_id_executor),
 ):
     return await task_services.progress_task(task_in, task)
+
+
+@router.patch("/{task_id}/comment", summary="Add comment.", response_model=TaskRead)
+async def add_comment(
+        comment_in: CommentCreate,
+        task_id: Annotated[int, Path],
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user)
+):
+    return await task_services.comment_task(comment_in, task_id, session, user)
