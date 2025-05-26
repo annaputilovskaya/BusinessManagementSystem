@@ -241,3 +241,23 @@ async def comment_task(
     await session.commit()
     await session.refresh(task)
     return task
+
+
+async def remove_task(
+        task: Task,
+        session: AsyncSession,
+) -> dict[str, str]:
+    """
+    Removes a specified task from the database.
+
+    Args:
+        task (Task): The task object to be removed from the database.
+        session (AsyncSession): The asynchronous session to interact with the database.
+
+    Returns:
+        dict[str, str] | None: A dictionary containing a confirmation message if the
+            task was successfully removed.
+    """
+    await session.delete(task)
+    await session.commit()
+    return {"detail": "Task deleted."}
