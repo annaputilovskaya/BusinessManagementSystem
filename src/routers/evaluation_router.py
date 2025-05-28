@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from src.auth.dependencies import http_bearer, current_active_verified_user
 from src.models import Task, dbh, User
@@ -55,3 +56,11 @@ async def update_evaluation(
         session: AsyncSession = Depends(dbh.session_getter)
 ):
     return await evaluation_services.change_evaluation(evaluation_in, task, session)
+
+
+@router.delete("/{task_id}", summary="Delete evaluation.", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_evaluation(
+        task: Task = Depends(get_task_by_id_manager),
+        session: AsyncSession = Depends(dbh.session_getter)
+):
+    return await evaluation_services.remove_evaluation(task, session)
