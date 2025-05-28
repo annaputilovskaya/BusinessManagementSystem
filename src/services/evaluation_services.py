@@ -1,8 +1,12 @@
+from datetime import date
+
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import Evaluation, Task
+from src.models import Evaluation, Task, User
 from src.schemas.evaluation_schemas import EvaluationCreateSchema
+from src.services.utils import check_dates
 
 
 async def add_evaluation(
@@ -45,4 +49,56 @@ async def add_evaluation(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": "No done tasks found."}
+        )
+
+
+async def get_user_evaluations(
+        executor_id: int,
+        session: AsyncSession,
+        user: User,
+        start_date: date | None = None,
+        end_date: date | None = None,
+) -> list[int]:
+    """
+    Retrieves evaluations for a specific user within an optional date range.
+
+    Args:
+        executor_id (int): The ID of the user whose evaluations are to be retrieved.
+        session (AsyncSession): The asynchronous database session for querying.
+        user (User): The current user requesting the evaluations.
+        start_date (date | None, optional): The optional start date for filtering evaluations (default is None).
+        end_date (date | None, optional): The optional end date for filtering evaluations (default is None).
+
+        Returns:
+        list[int]: A list of evaluation numbers for the specified user within the date range.
+
+        Raises:
+        HTTPException:
+            - 403 Forbidden: If the user does not have sufficient permissions to access the evaluations.
+    """
+
+    start_date, end_date = check_dates(start_date, end_date)
+    if user and user.id == executor_id:
+        stmt = (
+            select(Evaluation.number)
+            .join(Task)
+            .filter(Task.user_id == executor_id)
+            .filter(Evaluation.created_at.between(start_date, end_date))
+        )
+        numbers = await session.scalars(stmt)
+        return list(numbers)
+    elif user and user.is_manager:
+        stmt = (
+            select(Evaluation.number)
+            .join(Task)
+            .filter(Task.team_id == user.team_id)
+            .filter(Task.user_id == executor_id)
+            .filter(Evaluation.created_at.between(start_date, end_date))
+        )
+        numbers = await session.scalars(stmt)
+        return list(numbers)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."}
         )
