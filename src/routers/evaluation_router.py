@@ -4,7 +4,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.services
 from src.auth.dependencies import http_bearer, current_active_verified_user
 from src.models import Task, dbh, User
 from src.schemas.evaluation_schemas import EvaluationReadSchema, EvaluationCreateSchema
@@ -31,7 +30,7 @@ async def get_evaluations(
         start_date: date | None = None,
         end_date: date | None = None,
 ):
-    return await src.services.evaluation_services.get_user_evaluations(
+    return await evaluation_services.get_user_evaluations(
         executor_id, session, user, start_date, end_date
     )
 
@@ -44,6 +43,15 @@ async def get_average_evaluation(
         start_date: date | None = None,
         end_date: date | None = None,
 ):
-    return await src.services.evaluation_services.get_user_average_evaluation(
+    return await evaluation_services.get_user_average_evaluation(
         executor_id, session, user, start_date, end_date
     )
+
+
+@router.patch("/{task_id}", summary="Update evaluation.", response_model=EvaluationReadSchema)
+async def update_evaluation(
+        evaluation_in: EvaluationCreateSchema,
+        task: Task = Depends(get_task_by_id_manager),
+        session: AsyncSession = Depends(dbh.session_getter)
+):
+    return await evaluation_services.change_evaluation(evaluation_in, task, session)
