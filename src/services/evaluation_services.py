@@ -156,3 +156,34 @@ async def change_evaluation(
     await session.commit()
     await session.refresh(evaluation_db)
     return evaluation_db
+
+
+async def remove_evaluation(
+        task: Task,
+        session: AsyncSession,
+) -> dict[str, str]:
+    """
+    Removes the evaluation associated with the task.
+
+    Args:
+        task (Task): The task for which the evaluation will be removed.
+        session (AsyncSession): The asynchronous database session for committing changes.
+
+    Returns:
+        dict[str, str]: A dictionary containing a success message indicating that the evaluation was deleted.
+
+    Raises:
+        HTTPException:
+            - 404 Not Found: If no evaluations are found for the specified task.
+    """
+
+    evaluation = await session.scalar(select(Evaluation).where(Evaluation.task_id == task.id))
+    if evaluation:
+        await session.delete(evaluation)
+        await session.commit()
+        return {"detail": "Evaluation deleted."}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No evaluations found."}
+        )
