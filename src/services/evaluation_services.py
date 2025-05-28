@@ -66,8 +66,8 @@ async def get_user_evaluations(
         executor_id (int): The ID of the user whose evaluations are to be retrieved.
         session (AsyncSession): The asynchronous database session for querying.
         user (User): The current user requesting the evaluations.
-        start_date (date | None, optional): The optional start date for filtering evaluations (default is None).
-        end_date (date | None, optional): The optional end date for filtering evaluations (default is None).
+        start_date (Optional(date)): The optional start date for filtering evaluations (default is None).
+        end_date (Optional(date)): The optional end date for filtering evaluations (default is None).
 
         Returns:
         list[int]: A list of evaluation numbers for the specified user within the date range.
@@ -102,3 +102,32 @@ async def get_user_evaluations(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"message": "Not enough permissions for the action."}
         )
+
+
+async def get_user_average_evaluation(
+        executor_id: int,
+        session: AsyncSession,
+        user: User,
+        start_date: date | None = None,
+        end_date: date | None = None,
+) -> float | None:
+    """
+    Calculates the average evaluation score.
+
+    Retrieves the evaluation numbers for the user specified by the executor_id and
+    computes the average of those evaluations rounded to two decimal places. If there are no
+    evaluations, it returns None.
+
+    Args:
+        executor_id (int): The ID of the user whose average evaluation is to be calculated.
+        session (AsyncSession): The asynchronous database session for querying.
+        user (User): The current user requesting the average evaluation.
+        start_date (Optional(date)): The optional start date for filtering evaluations (default is None).
+        end_date (Optional(date)): The optional end date for filtering evaluations (default is None).
+
+    Returns:
+        float | None: The average evaluation score rounded to two decimal places, or None if no evaluations exist.
+    """
+    numbers = await get_user_evaluations(executor_id, session, user, start_date, end_date)
+    if numbers:
+        return round(sum(numbers)/len(numbers), 2)
