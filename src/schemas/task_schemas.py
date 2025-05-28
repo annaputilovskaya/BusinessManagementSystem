@@ -3,6 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from src.schemas.evaluation_schemas import EvaluationReadSchema
 from src.schemas.user_schemas import UserRead
 
 
@@ -78,7 +79,7 @@ class TaskRead(BaseModel):
         comments (list[CommentRead]): The list of comments associated with this task.         a relationship.
         executor (Optional(User)): The User object representing the executor
             of the task.
-        evaluation (Optional(Evaluation)): The evaluation for the task. Can be from 1 to five.
+        evaluation (Optional(Evaluation)): The evaluation for the task.
     """
     id: int
     name: str
@@ -86,7 +87,7 @@ class TaskRead(BaseModel):
     deadline: date
     status: str
     executor: UserRead | None = None
-    evaluation: int | None = Field(ge=1, le=5, default=None)
+    evaluation: EvaluationReadSchema | None = None
     comments: list["CommentRead"] | None = None
 
 
