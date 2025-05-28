@@ -131,3 +131,28 @@ async def get_user_average_evaluation(
     numbers = await get_user_evaluations(executor_id, session, user, start_date, end_date)
     if numbers:
         return round(sum(numbers)/len(numbers), 2)
+
+
+async def change_evaluation(
+        evaluation_in: EvaluationCreateSchema,
+        task: Task,
+        session: AsyncSession,
+) -> Evaluation:
+    """
+    Updates an existing evaluation for the task with new data.
+
+    Args:
+        evaluation_in (EvaluationCreateSchema): The new evaluation data to update.
+        task (Task): The task associated with the evaluation to be changed.
+        session (AsyncSession): The asynchronous database session for committing changes.
+
+    Returns:
+        Evaluation: The updated evaluation object after changes have been applied.
+    """
+
+    evaluation_db = await session.scalar(select(Evaluation).where(Evaluation.task_id == task.id))
+    evaluation_db.number = evaluation_in.number
+    session.add(evaluation_db)
+    await session.commit()
+    await session.refresh(evaluation_db)
+    return evaluation_db
