@@ -34,3 +34,16 @@ async def get_evaluations(
     return await src.services.evaluation_services.get_user_evaluations(
         executor_id, session, user, start_date, end_date
     )
+
+
+@router.get("/average/{user_id}", summary="Show user's average.")
+async def get_average_evaluation(
+        executor_id: Annotated[int, Path],
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user),
+        start_date: date | None = None,
+        end_date: date | None = None,
+):
+    return await src.services.evaluation_services.get_user_average_evaluation(
+        executor_id, session, user, start_date, end_date
+    )
