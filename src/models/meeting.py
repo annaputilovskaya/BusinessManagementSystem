@@ -47,4 +47,7 @@ class Meeting(Base):
     )
 
     def __str__(self):
+        """
+        Returns the string representation of the meeting object.
+        """
         return f'{self.id}. {self.meet_date.isoformat()} {self.meet_time.isoformat()}'
