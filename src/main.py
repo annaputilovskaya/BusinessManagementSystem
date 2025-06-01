@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
-from src.admin.admin import setup_admin
+from src.admin.admin_setup import setup_admin
 from src.config import settings
 from src.models import dbh
 from src.routers import router
