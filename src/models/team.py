@@ -12,3 +12,9 @@ class Team(Base):
     """
 
     members: Mapped[list["User"]] = relationship("User", back_populates="team", lazy="selectin")
+
+    def __str__(self):
+        """
+        Returns the string representation of the team object.
+        """
+        return f'{self.id}'
