@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,11 +8,7 @@ from src.models import User, Task, Comment
 from src.schemas.task_schemas import TaskCreate, TaskModify, TaskUpdate, CommentCreate
 
 
-async def add_task(
-        task_in: TaskCreate,
-        session: AsyncSession,
-        user: User
-) -> Task:
+async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Task:
     """
     Add a new task to the database.
 
@@ -23,26 +21,32 @@ async def add_task(
         Task: The created Task object.
 
     Raises:
-        HTTPException: If the user does not have the necessary permissions
-            to access the teams, a 403 Forbidden error is raised.
+        HTTPException:
+        - 403 Forbidden: If the user does not have the necessary permissions
+            to access the teams.
     """
 
     if user and user.is_manager:
         if task_in.user_id:
-            executor = await session.scalar(select(User).where(User.id == task_in.user_id, User.team_id == user.team_id))
+            executor = await session.scalar(
+                select(User).where(
+                    User.id == task_in.user_id, User.team_id == user.team_id
+                )
+            )
             if executor:
                 new_task = Task(
                     name=task_in.name,
                     description=task_in.description,
                     deadline=task_in.deadline,
                     team_id=user.team_id,
-                    user_id=executor.id                )
+                    user_id=executor.id,
+                )
             else:
                 new_task = Task(
                     name=task_in.name,
                     description=task_in.description,
                     deadline=task_in.deadline,
-                    team_id=user.team_id
+                    team_id=user.team_id,
                 )
         else:
             new_task = Task(
@@ -57,15 +61,12 @@ async def add_task(
         return new_task
     else:
         raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."},
         )
 
 
-async def get_all_tasks(
-        session: AsyncSession,
-        user: User
-) -> list[Task]:
+async def get_all_tasks(session: AsyncSession, user: User) -> list[Task]:
     """
     Retrieve all tasks associated with a specific user.
 
@@ -77,27 +78,73 @@ async def get_all_tasks(
         list[Task]: A list of Task objects associated with the specified user.
 
     Raises:
-        HTTPException: If the user does not have the necessary permissions
-            to access the teams, a 403 Forbidden error is raised.
+        HTTPException:
+        - 403 Forbidden: If the user does not have the necessary permissions
+            to access the teams.
     """
     if user:
         if user.is_manager:
-            tasks = await session.scalars(select(Task).where(Task.team_id == user.team_id))
+            tasks = await session.scalars(
+                select(Task).where(Task.team_id == user.team_id)
+            )
         else:
             tasks = await session.scalars(select(Task).where(Task.user_id == user.id))
         return list(tasks)
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            detail={"message": "Not enough permissions for the action."},
         )
 
 
-async  def get_task_by_id(
-        task_id: int,
-        session: AsyncSession,
-        user: User
-) -> Task:
+async def get_filtered_user_tasks(
+    start_date: date, end_date: date, session: AsyncSession, user: User
+) -> list[Task]:
+    """
+    Retrieve a list of tasks for a user within a specified date range.
+
+    Fetches all tasks associated with the specified user
+    that fall within the provided start and end dates.
+
+    Args:
+        start_date (date): The start date for filtering tasks.
+        end_date (date): The end date for filtering tasks.
+        session (AsyncSession): The asynchronous database session to use for database operations.
+        user (User): The user whose tasks are to be retrieved.
+
+    Returns:
+        list[Task]: A list of Task objects associated with the specified user.
+
+    Raises:
+        HTTPException:
+        - 400 Bad Request: if the date range is invalid.
+        - 403 Forbidden: If the user does not have the necessary permissions
+            to access the teams.
+    """
+
+    if user:
+        if start_date <= end_date:
+            tasks = await session.scalars(
+                select(Task)
+                .where(
+                    Task.user_id == user.id, Task.deadline.between(start_date, end_date)
+                )
+                .order_by(Task.deadline)
+            )
+            return list(tasks)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Incorrect dates interval."},
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."},
+        )
+
+
+async def get_task_by_id(task_id: int, session: AsyncSession, user: User) -> Task:
     """
     Retrieve a task from the database by ID.
 
@@ -111,38 +158,37 @@ async  def get_task_by_id(
 
     Raises:
         HTTPException:
-        - If the user is not an active verified user, a 403 Forbidden error is raised.
-        - If the user does not have the necessary permissions to access the task,
-            or task with such ID does not exist in the database,
-            a 404 Not found error is raised.
+        - 403 Forbidden: If the user is not an active verified user.
+        - 404 Not found: If the user does not have the necessary permissions to access the task,
+            or task with such ID does not exist in the database.
 
     """
     if user:
         if user.is_manager:
-            task = await session.scalar(select(Task).where(Task.id == task_id, Task.team_id == user.team_id))
+            task = await session.scalar(
+                select(Task).where(Task.id == task_id, Task.team_id == user.team_id)
+            )
         else:
-            task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
+            task = await session.scalar(
+                select(Task).where(Task.id == task_id, Task.user_id == user.id)
+            )
 
         if not task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No tasks found."}
+                detail={"message": "No tasks found."},
             )
         return task
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            detail={"message": "Not enough permissions for the action."},
         )
 
 
 async def change_task(
-        task_in: TaskModify,
-        task: Task,
-        session: AsyncSession,
-        user: User
+    task_in: TaskModify, task: Task, session: AsyncSession, user: User
 ) -> Task:
-
     """
     Modify an existing task based on the provided input.
 
@@ -162,7 +208,9 @@ async def change_task(
     """
     task_dict = task_in.model_dump(exclude_unset=True)
     if task_in.user_id:
-        executor = await session.scalar(select(User).where(User.id == task_in.user_id, User.team_id == user.team_id))
+        executor = await session.scalar(
+            select(User).where(User.id == task_in.user_id, User.team_id == user.team_id)
+        )
         if not executor:
             del task_dict["user_id"]
     for name, value in task_dict.items():
@@ -173,10 +221,9 @@ async def change_task(
 
 
 async def progress_task(
-        task_in: TaskUpdate,
-        task: Task,
+    task_in: TaskUpdate,
+    task: Task,
 ) -> Task:
-
     """
     Updates the progress of a given task.
 
@@ -195,12 +242,7 @@ async def progress_task(
     return task
 
 
-def create_comment(
-        comment_in: CommentCreate,
-        task_id: int,
-        user: User
-) -> Comment:
-
+def create_comment(comment_in: CommentCreate, task_id: int, user: User) -> Comment:
     """
     Creates a new comment for a specified task.
 
@@ -217,10 +259,7 @@ def create_comment(
 
 
 async def comment_task(
-        comment_in: CommentCreate,
-        task_id: int,
-        session: AsyncSession,
-        user: User
+    comment_in: CommentCreate, task_id: int, session: AsyncSession, user: User
 ) -> Task:
     """
     Adds a comment to a specified task.
@@ -244,8 +283,8 @@ async def comment_task(
 
 
 async def remove_task(
-        task: Task,
-        session: AsyncSession,
+    task: Task,
+    session: AsyncSession,
 ) -> dict[str, str]:
     """
     Removes a specified task from the database.
