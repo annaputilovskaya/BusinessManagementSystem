@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from fastapi import HTTPException, status
 
@@ -30,3 +30,21 @@ def check_dates(start_date, end_date):
             detail={"message": "Incorrect dates interval."}
         )
     return start_date, end_date
+
+
+def get_first_and_last_day_of_month(day: date) -> tuple[date, date]:
+    """
+    Returns the first and the last day of the month for a given date.
+
+    Args:
+        daу (date): A date object.
+
+    Returns:
+        tuple: A tuple of date objects representing the first and
+            the last day of the month for the input date.
+    """
+    first_day = day.replace(day=1)
+    next_month = day.replace(day=28) + timedelta(days=4)
+    first_day_next_month = next_month.replace(day=1)
+    last_day = first_day_next_month - timedelta(days=1)
+    return first_day, last_day
