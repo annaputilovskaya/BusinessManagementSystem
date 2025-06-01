@@ -32,6 +32,12 @@ class Comment(Base):
 
     task: Mapped["Task"] = relationship("Task", back_populates="comments")
 
+    def __str__(self):
+        """
+        Returns the string representation of the comment object.
+        """
+        return f'{self.id}'
+
 
 class Task(Base):
     """
@@ -66,3 +72,9 @@ class Task(Base):
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="task", lazy="selectin")
     executor: Mapped["User"] = relationship("User", back_populates="tasks", lazy="selectin")
     evaluation: Mapped["Evaluation"] = relationship("Evaluation", back_populates="task", lazy="selectin")
+
+    def __str__(self):
+        """
+        Returns the string representation of the task object.
+        """
+        return f'{self.id}. {self.name} ({self.team_id})'
