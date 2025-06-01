@@ -29,6 +29,12 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
     team: Mapped["Team"] = relationship("Team", back_populates="members")
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="executor")
 
+    meetings: Mapped[list["Meeting"]] = relationship(
+        "Meeting",
+        secondary="meeting_user_association",
+        back_populates="participants",
+    )
+
     @classmethod
     def get_db(cls, session: AsyncSession):
         """
@@ -43,3 +49,9 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
         """
 
         return SQLAlchemyUserDatabase(session, cls)
+
+    def __str__(self):
+        """
+        Returns the string representation of the user object.
+        """
+        return f'{self.id}. {self.email} ({self.team_id})'
