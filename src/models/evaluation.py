@@ -43,3 +43,10 @@ class Evaluation(Base):
             raise ValueError("Number must be between 1 and 5")
         self.number = number
         self.task_id = task_id
+
+    def __str__(self):
+        """
+        Returns the string representation of the evaluation object.
+        """
+
+        return str(self.number)
