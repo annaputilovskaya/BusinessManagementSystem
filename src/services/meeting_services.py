@@ -9,10 +9,10 @@ from src.schemas.meeting_schemas import MeetingCreateSchema
 
 
 async def check_schedule_conflict(
-        participant_ids: list[int],
-        meeting_date: date,
-        meeting_time: time,
-        session: AsyncSession
+    participant_ids: list[int],
+    meeting_date: date,
+    meeting_time: time,
+    session: AsyncSession,
 ) -> list[Meeting]:
     """
     Checks for scheduling conflicts for a list of participants.
@@ -32,19 +32,21 @@ async def check_schedule_conflict(
 
     time_minus_hour = time(meeting_time.hour - 1, meeting_time.minute)
     time_plus_hour = time(meeting_time.hour + 1, meeting_time.minute)
-    conflicts = await session.scalars(select(Meeting).join(MeetingUserAssociation).where(
-        MeetingUserAssociation.user_id.in_(participant_ids),
-        Meeting.meet_date == meeting_date,
-        Meeting.is_canceled == False,
-        Meeting.meet_time.between(time_minus_hour, time_plus_hour)
-    ))
+    conflicts = await session.scalars(
+        select(Meeting)
+        .join(MeetingUserAssociation)
+        .where(
+            MeetingUserAssociation.user_id.in_(participant_ids),
+            Meeting.meet_date == meeting_date,
+            Meeting.is_canceled == False,
+            Meeting.meet_time.between(time_minus_hour, time_plus_hour),
+        )
+    )
     return list(conflicts)
 
 
 async def add_meeting(
-        meeting_in: MeetingCreateSchema,
-        session: AsyncSession,
-        user: User
+    meeting_in: MeetingCreateSchema, session: AsyncSession, user: User
 ) -> Meeting:
     """
     Add a new meeting for a list of participants.
@@ -69,32 +71,32 @@ async def add_meeting(
 
     meeting_in.participants.append(user.id)
     conflicts = await check_schedule_conflict(
-        meeting_in.participants,
-        meeting_in.meet_date,
-        meeting_in.meet_time,
-        session
+        meeting_in.participants, meeting_in.meet_date, meeting_in.meet_time, session
     )
     if conflicts:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"message": "There is another meeting for one or more participants in the same time."}
+            detail={
+                "message": "There is another meeting for one or more participants in the same time."
+            },
         )
     else:
-        participants = await session.scalars(select(User).where(
-            User.id.in_(meeting_in.participants),
-            User.team_id == user.team_id)
+        participants = await session.scalars(
+            select(User).where(
+                User.id.in_(meeting_in.participants), User.team_id == user.team_id
+            )
         )
         participants = list(participants)
         if len(participants) == 1:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "There are no such users in your team."}
+                detail={"message": "There are no such users in your team."},
             )
         else:
             new_meeting = Meeting(
                 meet_date=meeting_in.meet_date,
                 meet_time=meeting_in.meet_time,
-                participants=participants
+                participants=participants,
             )
 
             session.add(new_meeting)
@@ -104,10 +106,10 @@ async def add_meeting(
 
 
 async def get_filtered_user_meetings(
-        start_date: date,
-        end_date: date,
-        session: AsyncSession,
-        user: User,
+    start_date: date,
+    end_date: date,
+    session: AsyncSession,
+    user: User,
 ) -> list[Meeting]:
     """
     Retrieve a list of meetings for a user within a specified date range.
@@ -130,23 +132,28 @@ async def get_filtered_user_meetings(
         - 400 Bad Request: if the date range is invalid.
     """
     if start_date <= end_date:
-        meetings = await session.scalars(select(Meeting).join(MeetingUserAssociation).where(
-        MeetingUserAssociation.user_id == user.id,
-         Meeting.is_canceled == False,
-         Meeting.meet_date.between(start_date, end_date))
-    )
+        meetings = await session.scalars(
+            select(Meeting)
+            .join(MeetingUserAssociation)
+            .where(
+                MeetingUserAssociation.user_id == user.id,
+                Meeting.is_canceled == False,
+                Meeting.meet_date.between(start_date, end_date),
+            )
+            .order_by(Meeting.meet_date, Meeting.meet_time)
+        )
         return list(meetings)
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"message": "Incorrect dates interval."}
+            detail={"message": "Incorrect dates interval."},
         )
 
 
 async def cancel_meeting(
-        meeting_db: Meeting,
-        session: AsyncSession,
-) -> dict[str,str]:
+    meeting_db: Meeting,
+    session: AsyncSession,
+) -> dict[str, str]:
     """
     Cancel an existing meeting in the database.
 
