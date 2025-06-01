@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user
 from src.models import User, dbh, Task, Team
-
+from src.models.meeting import Meeting
 
 
 async def get_team_by_id(
@@ -30,8 +30,8 @@ async def get_team_by_id(
 
     Raises:
             HTTPException:
-            - If the user does not have the necessary permissions, a 403 Forbidden error is raised.
-            - If the specified team is not found, a 404 Not Found error is raised.
+            - 403 Forbidden: if the user does not have the necessary permissions.
+            - 404 Not Found: if the specified team is not found.
     """
 
     if user:
@@ -67,10 +67,9 @@ async def get_task_by_id_executor(
 
     Raises:
         HTTPException:
-        - If the user is not an active verified user, a 403 Forbidden error is raised.
-        - If the user does not have the necessary permissions to access the task,
-            or task with such ID does not exist in the database,
-            a 404 Not found error is raised.
+        - 403 Forbidden: if the user is not an active verified user.
+        - 404 Not found: if the user does not have the necessary permissions to access the task,
+            or task with such ID does not exist in the database.
     """
     if user:
         task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
@@ -105,10 +104,9 @@ async def get_task_by_id_manager(
 
     Raises:
         HTTPException:
-        - If the user is not an active verified user, a 403 Forbidden error is raised.
-        - If the user does not have the necessary permissions to access the task,
-            or task with such ID does not exist in the database,
-            a 404 Not found error is raised.
+        - 403 Forbidden: if the user is not an active verified user.
+        - 404 Not found: if the user does not have the necessary permissions to access the task,
+            or task with such ID does not exist in the database.
     """
     if user and user.is_manager:
         task = await session.scalar(select(Task).where(Task.id == task_id, Task.team_id == user.team_id))
@@ -123,3 +121,41 @@ async def get_task_by_id_manager(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"message": "Not enough permissions for the action."}
         )
+
+
+async def get_meeting_by_id(
+        meeting_id: Annotated[int, Path],
+        session: AsyncSession = Depends(dbh.session_getter),
+        user: User = Depends(current_active_verified_user)
+) -> Meeting:
+    """
+    Retrieve a meeting from the database by ID if user is a participant of the meeting.
+
+    Show meeting if it's not canceled.
+
+    Args:
+        meeting_id (int): The ID of the meeting to retrieve.
+        session (AsyncSession): The database session to be used for querying.
+        user (User): The user for whom meeting are to be retrieved.
+
+    Returns:
+        Meeting: A Meeting object associated with the specified meeting ID.
+
+    Raises:
+        HTTPException:
+        - 403 Forbidden: if the user is not an active verified user.
+        - 404 Not found: if the user does not have the necessary permissions to access the meeting,
+            or meeting with such ID does not exist in the database.
+    """
+
+    meeting_db = await session.scalar(select(Meeting).where(
+        Meeting.id == meeting_id,
+        Meeting.is_canceled == False,
+        Meeting.participants.any(User.id == user.id)
+    ))
+    if not meeting_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No meetings found."}
+        )
+    return meeting_db
