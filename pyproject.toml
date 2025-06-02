@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "businessmanagementsystem"
+name = "business_management_system"
 version = "0.1.0"
 description = ""
 authors = ["anna putilovskaya <putilovskayaam@gmail.com>"]
@@ -19,6 +19,10 @@ sqladmin = {extras = ["full"], version = "^0.20.1"}
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 flake8 = "^7.2.0"
+pytest = "^8.3.5"
+pytest-asyncio = "^1.0.0"
+pytest-cov = "^6.1.1"
+asgi-lifespan = "^2.1.0"
 
 [build-system]
 requires = ["poetry-core"]
