@@ -36,7 +36,7 @@ async def add_evaluation(
             status_code=status.HTTP_409_CONFLICT,
             detail={"message": "An evaluation for the task already exists."},
         )
-    elif task.status is "done":
+    elif task.status == "done":
         new_evaluation = Evaluation(number=evaluation_in.number, task_id=task.id)
         session.add(new_evaluation)
         await session.commit()
