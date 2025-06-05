@@ -59,6 +59,11 @@ async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Ta
         await session.commit()
         await session.refresh(new_task)
         return new_task
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Not enough permissions for the action."},
+        )
 
 
 async def get_all_tasks(session: AsyncSession, user: User) -> list[Task]:
