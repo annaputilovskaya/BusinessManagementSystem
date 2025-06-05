@@ -47,6 +47,8 @@ async def update_team(
     user_ids: list[int],
     team: Team = Depends(get_team_by_id),
     session: AsyncSession = Depends(dbh.session_getter),
+    user: User = Depends(current_active_verified_superuser),
+
 ):
     return await add_team_id_to_team_members(user_ids, team, session)
 
@@ -57,5 +59,7 @@ async def update_team(
 async def delete_team(
     team: Team = Depends(get_team_by_id),
     session: AsyncSession = Depends(dbh.session_getter),
+    user: User = Depends(current_active_verified_superuser),
+
 ):
     return await remove_team(team, session)
