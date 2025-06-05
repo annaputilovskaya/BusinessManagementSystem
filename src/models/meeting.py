@@ -34,6 +34,7 @@ class Meeting(Base):
             Defaults to False.
         participants (list(User)): Users who participate in the meeting.
     """
+
     meet_date: Mapped[date]
     meet_time: Mapped[time]
     is_canceled: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -43,11 +44,11 @@ class Meeting(Base):
         secondary="meeting_user_association",
         back_populates="meetings",
         cascade="all, delete",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     def __str__(self):
         """
         Returns the string representation of the meeting object.
         """
-        return f'{self.id}. {self.meet_date.isoformat()} {self.meet_time.isoformat()}'
+        return f"{self.id}. {self.meet_date.isoformat()} {self.meet_time.isoformat()}"

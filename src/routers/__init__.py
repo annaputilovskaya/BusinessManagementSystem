@@ -8,7 +8,6 @@ from src.routers.meeting_router import router as meeting_router
 from src.routers.schedule_router import router as schedule_router
 
 
-
 router = APIRouter()
 
 router.include_router(user_router)

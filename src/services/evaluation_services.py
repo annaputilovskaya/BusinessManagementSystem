@@ -10,9 +10,9 @@ from src.services.utils import check_dates
 
 
 async def add_evaluation(
-        evaluation_in: EvaluationCreateSchema,
-        task: Task,
-        session: AsyncSession,
+    evaluation_in: EvaluationCreateSchema,
+    task: Task,
+    session: AsyncSession,
 ) -> Evaluation:
     """
     Adds a new evaluation to the task if it has status done.
@@ -30,17 +30,14 @@ async def add_evaluation(
             - 409 Conflict: If an evaluation already exists for the task.
             - 404 Not Found: If the task status is not "done".
 
-     """
+    """
     if task.evaluation:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"message": "An evaluation for the task already exists."}
+            detail={"message": "An evaluation for the task already exists."},
         )
     elif task.status is "done":
-        new_evaluation = Evaluation(
-            number=evaluation_in.number,
-            task_id=task.id
-        )
+        new_evaluation = Evaluation(number=evaluation_in.number, task_id=task.id)
         session.add(new_evaluation)
         await session.commit()
         await session.refresh(new_evaluation)
@@ -48,16 +45,16 @@ async def add_evaluation(
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": "No done tasks found."}
+            detail={"message": "No done tasks found."},
         )
 
 
 async def get_user_evaluations(
-        executor_id: int,
-        session: AsyncSession,
-        user: User,
-        start_date: date | None = None,
-        end_date: date | None = None,
+    executor_id: int,
+    session: AsyncSession,
+    user: User,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> list[int]:
     """
     Retrieves evaluations for a specific user within an optional date range.
@@ -78,7 +75,7 @@ async def get_user_evaluations(
     """
 
     start_date, end_date = check_dates(start_date, end_date)
-    if user and user.id == executor_id:
+    if user.id == executor_id:
         stmt = (
             select(Evaluation.number)
             .join(Task)
@@ -87,7 +84,7 @@ async def get_user_evaluations(
         )
         numbers = await session.scalars(stmt)
         return list(numbers)
-    elif user and user.is_manager:
+    elif user.is_manager:
         stmt = (
             select(Evaluation.number)
             .join(Task)
@@ -100,16 +97,16 @@ async def get_user_evaluations(
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            detail={"message": "Not enough permissions for the action."},
         )
 
 
 async def get_user_average_evaluation(
-        executor_id: int,
-        session: AsyncSession,
-        user: User,
-        start_date: date | None = None,
-        end_date: date | None = None,
+    executor_id: int,
+    session: AsyncSession,
+    user: User,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> float | None:
     """
     Calculates the average evaluation score.
@@ -128,15 +125,17 @@ async def get_user_average_evaluation(
     Returns:
         float | None: The average evaluation score rounded to two decimal places, or None if no evaluations exist.
     """
-    numbers = await get_user_evaluations(executor_id, session, user, start_date, end_date)
+    numbers = await get_user_evaluations(
+        executor_id, session, user, start_date, end_date
+    )
     if numbers:
-        return round(sum(numbers)/len(numbers), 2)
+        return round(sum(numbers) / len(numbers), 2)
 
 
 async def change_evaluation(
-        evaluation_in: EvaluationCreateSchema,
-        task: Task,
-        session: AsyncSession,
+    evaluation_in: EvaluationCreateSchema,
+    task: Task,
+    session: AsyncSession,
 ) -> Evaluation:
     """
     Updates an existing evaluation for the task with new data.
@@ -150,7 +149,9 @@ async def change_evaluation(
         Evaluation: The updated evaluation object after changes have been applied.
     """
 
-    evaluation_db = await session.scalar(select(Evaluation).where(Evaluation.task_id == task.id))
+    evaluation_db = await session.scalar(
+        select(Evaluation).where(Evaluation.task_id == task.id)
+    )
     evaluation_db.number = evaluation_in.number
     session.add(evaluation_db)
     await session.commit()
@@ -159,8 +160,8 @@ async def change_evaluation(
 
 
 async def remove_evaluation(
-        task: Task,
-        session: AsyncSession,
+    task: Task,
+    session: AsyncSession,
 ) -> dict[str, str]:
     """
     Removes the evaluation associated with the task.
@@ -177,7 +178,9 @@ async def remove_evaluation(
             - 404 Not Found: If no evaluations are found for the specified task.
     """
 
-    evaluation = await session.scalar(select(Evaluation).where(Evaluation.task_id == task.id))
+    evaluation = await session.scalar(
+        select(Evaluation).where(Evaluation.task_id == task.id)
+    )
     if evaluation:
         await session.delete(evaluation)
         await session.commit()
@@ -185,5 +188,5 @@ async def remove_evaluation(
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": "No evaluations found."}
+            detail={"message": "No evaluations found."},
         )

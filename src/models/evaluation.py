@@ -20,9 +20,12 @@ class Evaluation(Base):
     """
 
     number: Mapped[int]
-    task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"), index=True, unique=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("tasks.id", ondelete="CASCADE"), index=True, unique=True
+    )
     created_at: Mapped[date] = mapped_column(
-        Date, server_default=current_date(),
+        Date,
+        server_default=current_date(),
     )
     task: Mapped["Task"] = relationship("Task", back_populates="evaluation")
 

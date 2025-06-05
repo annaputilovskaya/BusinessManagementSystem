@@ -12,8 +12,7 @@ from src.services.task_services import get_filtered_user_tasks
 
 
 def group_by_date(
-        meetings: list[Meeting],
-        tasks: list[Task]
+    meetings: list[Meeting], tasks: list[Task]
 ) -> dict[date, dict[str, Any] | None]:
     """
     Groups meetings and tasks by their dates.
@@ -34,23 +33,19 @@ def group_by_date(
         'tasks', containing lists of the corresponding meeting and task
         objects.
     """
-    events_by_date = defaultdict(lambda: {'tasks': [], 'meetings': []})
+    events_by_date = defaultdict(lambda: {"tasks": [], "meetings": []})
     for meeting in meetings:
-        events_by_date[meeting.meet_date]['meetings'].append(meeting)
+        events_by_date[meeting.meet_date]["meetings"].append(meeting)
     for day in events_by_date:
-        events_by_date[day]['meetings'].sort(key=lambda m: (m.meet_time, m.meet_date))
+        events_by_date[day]["meetings"].sort(key=lambda m: (m.meet_time, m.meet_date))
     for task in tasks:
-        events_by_date[task.deadline]['tasks'].append(task)
+        events_by_date[task.deadline]["tasks"].append(task)
     events_by_date = dict(sorted(events_by_date.items()))
     return events_by_date
 
 
-
 async def get_user_schedule(
-    start_date: date,
-    end_date: date,
-    session: AsyncSession,
-    user: User
+    start_date: date, end_date: date, session: AsyncSession, user: User
 ) -> dict[date, dict[str, Any] | None]:
     """
     Retrieve a combined list of meetings and tasks for a user within a specified date range,
@@ -68,7 +63,6 @@ async def get_user_schedule(
     Raises:
         HTTPException:
         - 400 Bad Request: if the date range is invalid.
-        - 403 Forbidden: if the user does not have the necessary permissions to access.
     """
     if start_date > end_date:
         raise HTTPException(

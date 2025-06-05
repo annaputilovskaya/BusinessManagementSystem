@@ -21,10 +21,10 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
             a relationship.
     """
 
-    is_manager: Mapped[bool] = mapped_column(
-            Boolean, default=False, nullable=False
-        )
-    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id", ondelete="SET NULL"))
+    is_manager: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    team_id: Mapped[int | None] = mapped_column(
+        ForeignKey("teams.id", ondelete="SET NULL")
+    )
 
     team: Mapped["Team"] = relationship("Team", back_populates="members")
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="executor")
@@ -54,4 +54,4 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
         """
         Returns the string representation of the user object.
         """
-        return f'{self.id}. {self.email} ({self.team_id})'
+        return f"{self.id}. {self.email} ({self.team_id})"

@@ -27,7 +27,6 @@ class UserCreate(schemas.BaseUserCreate):
     is_manager: bool = False
     team_id: int | None = None
 
-
     def create_update_dict(self):
         """
         Creates a dictionary for creating user information.
@@ -52,7 +51,7 @@ class UserCreate(schemas.BaseUserCreate):
                 "is_verified",
                 "oauth_accounts",
                 "is_manager",
-                "team_id"
+                "team_id",
             },
         )
 
@@ -68,9 +67,9 @@ class UserUpdate(schemas.BaseUserUpdate):
         is_manager (bool): Indicates if the user should be updated to
         have manager privileges. Defaults to False.
     """
+
     is_manager: bool = False
     team_id: int | None = None
-
 
     def create_update_dict(self):
         """
@@ -95,6 +94,6 @@ class UserUpdate(schemas.BaseUserUpdate):
                 "is_verified",
                 "oauth_accounts",
                 "is_manager",
-                "team_id"
+                "team_id",
             },
         )

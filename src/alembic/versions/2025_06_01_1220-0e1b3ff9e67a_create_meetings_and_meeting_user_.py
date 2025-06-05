@@ -46,12 +46,8 @@ def upgrade() -> None:
             name=op.f("fk_meeting_user_association_user_id_users"),
             ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint(
-            "id", name=op.f("pk_meeting_user_association")
-        ),
-        sa.UniqueConstraint(
-            "meeting_id", "user_id", name="idx_unique_meeting_user"
-        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_meeting_user_association")),
+        sa.UniqueConstraint("meeting_id", "user_id", name="idx_unique_meeting_user"),
     )
 
 

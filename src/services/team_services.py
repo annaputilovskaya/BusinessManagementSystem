@@ -23,7 +23,6 @@ async def add_team(session: AsyncSession) -> Team:
     return new_team
 
 
-
 async def get_all_teams(session: AsyncSession) -> list[Team]:
     """
     Retrieve all teams from the database.
@@ -39,11 +38,10 @@ async def get_all_teams(session: AsyncSession) -> list[Team]:
     return list(teams)
 
 
-
 async def add_team_id_to_team_members(
-        user_ids: list[int],
-        team: Team,
-        session: AsyncSession,
+    user_ids: list[int],
+    team: Team,
+    session: AsyncSession,
 ) -> dict[str, str]:
     """Assign a team ID to multiple user members in the database.
 
@@ -66,18 +64,19 @@ async def add_team_id_to_team_members(
     users_update = await session.scalars(select(User).where(User.id.in_(user_ids)))
     if users_update is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": "No users found."}
+            status_code=status.HTTP_404_NOT_FOUND, detail={"message": "No users found."}
         )
     else:
-        await session.execute(update(User).where(User.id.in_(user_ids)).values(team_id=team.id))
+        await session.execute(
+            update(User).where(User.id.in_(user_ids)).values(team_id=team.id)
+        )
         await session.commit()
         return {"detail": "Team updated."}
 
 
 async def remove_team(
-        team: Team,
-        session: AsyncSession,
+    team: Team,
+    session: AsyncSession,
 ) -> dict[str, str]:
     """
     Remove a team from the database.

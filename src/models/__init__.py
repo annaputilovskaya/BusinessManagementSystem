@@ -8,7 +8,7 @@ __all__ = (
     "Task",
     "Evaluation",
     "Meeting",
-    "MeetingUserAssociation"
+    "MeetingUserAssociation",
 )
 
 from src.models.base import Base

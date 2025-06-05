@@ -27,6 +27,7 @@ class CommentRead(CommentCreate):
         user_id (int): The ID of the user, who has created the comment.
 
     """
+
     created_at: datetime
     user_id: int
 
@@ -42,6 +43,7 @@ class TaskCreate(BaseModel):
         user_id (Optional[int]): The ID of the user assigned to
             the task, or None if not assigned.
     """
+
     name: str = Field(max_length=250)
     description: str
     deadline: date = Field(ge=date.today())
@@ -59,11 +61,11 @@ class TaskModify(BaseModel):
         user_id (Optional[int]): The ID of the user assigned to
             the task, or None if not assigned.
     """
+
     name: str | None = Field(max_length=250, default=None)
     description: str | None = None
     deadline: date | None = Field(ge=date.today(), default=None)
     user_id: int | None = None
-
 
 
 class TaskRead(BaseModel):
@@ -76,11 +78,12 @@ class TaskRead(BaseModel):
         description (str): A description of the task.
         deadline (date): The deadline for the task.
         status (str): The current status of the task.
-        comments (list[CommentRead]): The list of comments associated with this task.         a relationship.
+        comments (list[CommentRead]): The list of comments associated with this task.
         executor (Optional(User)): The User object representing the executor
             of the task.
         evaluation (Optional(Evaluation)): The evaluation for the task.
     """
+
     id: int
     name: str
     description: str
@@ -100,4 +103,5 @@ class TaskUpdate(BaseModel):
             By default, is progress.
 
     """
+
     status: Literal["opened", "progress", "done"] = Field(default="progress")

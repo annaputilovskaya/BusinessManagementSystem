@@ -19,7 +19,7 @@ class MeetingCreateSchema(BaseModel):
     meet_time: time = Field(ge=time(8), le=time(20))
     participants: list[int]
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_meeting_datetime(self):
         """
         Checks if meeting datetime is greater than current datetime.
@@ -40,6 +40,7 @@ class MeetingReadSchema(BaseModel):
         meet_time (time): Time of the meeting.
         participants (list(UserReadSchema)): The list of users who participate in the meeting.
     """
+
     id: int
     meet_date: date
     meet_time: time

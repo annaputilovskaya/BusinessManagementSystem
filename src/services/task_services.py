@@ -79,13 +79,10 @@ async def get_all_tasks(session: AsyncSession, user: User) -> list[Task]:
     """
 
     if user.is_manager:
-        tasks = await session.scalars(
-            select(Task).where(Task.team_id == user.team_id)
-        )
+        tasks = await session.scalars(select(Task).where(Task.team_id == user.team_id))
     else:
         tasks = await session.scalars(select(Task).where(Task.user_id == user.id))
     return list(tasks)
-
 
 
 async def get_filtered_user_tasks(
@@ -114,9 +111,7 @@ async def get_filtered_user_tasks(
     if start_date <= end_date:
         tasks = await session.scalars(
             select(Task)
-            .where(
-                Task.user_id == user.id, Task.deadline.between(start_date, end_date)
-            )
+            .where(Task.user_id == user.id, Task.deadline.between(start_date, end_date))
             .order_by(Task.deadline)
         )
         return list(tasks)
@@ -125,7 +120,6 @@ async def get_filtered_user_tasks(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": "Incorrect dates interval."},
         )
-
 
 
 async def get_task_by_id(task_id: int, session: AsyncSession, user: User) -> Task:
@@ -162,7 +156,6 @@ async def get_task_by_id(task_id: int, session: AsyncSession, user: User) -> Tas
             detail={"message": "No tasks found."},
         )
     return task
-
 
 
 async def change_task(

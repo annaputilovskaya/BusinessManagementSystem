@@ -64,7 +64,7 @@ class AdminAuth(AuthenticationBackend):
                 return False
 
             if not user_manager.password_helper.password_hash.verify(
-                    password, user.hashed_password
+                password, user.hashed_password
             ):
                 return False
 

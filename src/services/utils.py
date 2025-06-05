@@ -27,7 +27,7 @@ def check_dates(start_date, end_date):
     if start_date > end_date:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"message": "Incorrect dates interval."}
+            detail={"message": "Incorrect dates interval."},
         )
     return start_date, end_date
 

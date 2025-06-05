@@ -22,13 +22,16 @@ class Comment(Base):
         task (Task): The Task object associated with this comment, linked via
             a relationship.
     """
+
     text: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=sqla_text("timezone('utc', now())"),
     )
     task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
     task: Mapped["Task"] = relationship("Task", back_populates="comments")
 
@@ -36,7 +39,7 @@ class Comment(Base):
         """
         Returns the string representation of the comment object.
         """
-        return f'{self.id}'
+        return f"{self.id}"
 
 
 class Task(Base):
@@ -66,15 +69,25 @@ class Task(Base):
     status: Mapped[StatusEnum] = mapped_column(
         Enum("opened", "progress", "done", native_enum=False), default="opened"
     )
-    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id", ondelete="CASCADE"), index=True)
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True, default=None)
+    team_id: Mapped[int] = mapped_column(
+        ForeignKey("teams.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True, default=None
+    )
 
-    comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="task", lazy="selectin")
-    executor: Mapped["User"] = relationship("User", back_populates="tasks", lazy="selectin")
-    evaluation: Mapped["Evaluation"] = relationship("Evaluation", back_populates="task", lazy="selectin")
+    comments: Mapped[list["Comment"]] = relationship(
+        "Comment", back_populates="task", lazy="selectin"
+    )
+    executor: Mapped["User"] = relationship(
+        "User", back_populates="tasks", lazy="selectin"
+    )
+    evaluation: Mapped["Evaluation"] = relationship(
+        "Evaluation", back_populates="task", lazy="selectin"
+    )
 
     def __str__(self):
         """
         Returns the string representation of the task object.
         """
-        return f'{self.id}. {self.name} ({self.team_id})'
+        return f"{self.id}. {self.name} ({self.team_id})"

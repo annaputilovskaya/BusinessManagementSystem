@@ -10,8 +10,8 @@ from src.models.meeting import Meeting
 
 
 async def get_team_by_id(
-        team_id: Annotated[int, Path],
-        session: AsyncSession = Depends(dbh.session_getter),
+    team_id: Annotated[int, Path],
+    session: AsyncSession = Depends(dbh.session_getter),
 ) -> Team:
     """
     Retrieve a team from the database by ID.
@@ -31,16 +31,15 @@ async def get_team_by_id(
     team = await session.scalar(select(Team).where(Team.id == team_id))
     if not team:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": "No teams found."}
+            status_code=status.HTTP_404_NOT_FOUND, detail={"message": "No teams found."}
         )
     return team
 
 
 async def get_task_by_id_executor(
-        task_id: Annotated[int, Path],
-        session: AsyncSession = Depends(dbh.session_getter),
-        user: User = Depends(current_active_verified_user)
+    task_id: Annotated[int, Path],
+    session: AsyncSession = Depends(dbh.session_getter),
+    user: User = Depends(current_active_verified_user),
 ) -> Task:
     """
     Retrieve a task from the database by ID if user is not a manager.
@@ -59,19 +58,20 @@ async def get_task_by_id_executor(
             or task with such ID does not exist in the database.
     """
 
-    task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
+    task = await session.scalar(
+        select(Task).where(Task.id == task_id, Task.user_id == user.id)
+    )
     if not task:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": "No tasks found."}
+            status_code=status.HTTP_404_NOT_FOUND, detail={"message": "No tasks found."}
         )
     return task
 
 
 async def get_task_by_id_manager(
-        task_id: Annotated[int, Path],
-        session: AsyncSession = Depends(dbh.session_getter),
-        user: User = Depends(current_active_verified_user)
+    task_id: Annotated[int, Path],
+    session: AsyncSession = Depends(dbh.session_getter),
+    user: User = Depends(current_active_verified_user),
 ) -> Task:
     """
     Retrieve a task from the database by ID if user is a manager.
@@ -91,24 +91,26 @@ async def get_task_by_id_manager(
             or task with such ID does not exist in the database.
     """
     if user.is_manager:
-        task = await session.scalar(select(Task).where(Task.id == task_id, Task.team_id == user.team_id))
+        task = await session.scalar(
+            select(Task).where(Task.id == task_id, Task.team_id == user.team_id)
+        )
         if not task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No tasks found."}
+                detail={"message": "No tasks found."},
             )
         return task
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            detail={"message": "Not enough permissions for the action."},
         )
 
 
 async def get_meeting_by_id(
-        meeting_id: Annotated[int, Path],
-        session: AsyncSession = Depends(dbh.session_getter),
-        user: User = Depends(current_active_verified_user)
+    meeting_id: Annotated[int, Path],
+    session: AsyncSession = Depends(dbh.session_getter),
+    user: User = Depends(current_active_verified_user),
 ) -> Meeting:
     """
     Retrieve a meeting from the database by ID if user is a participant of the meeting.
@@ -130,14 +132,16 @@ async def get_meeting_by_id(
             or meeting with such ID does not exist in the database.
     """
 
-    meeting_db = await session.scalar(select(Meeting).where(
-        Meeting.id == meeting_id,
-        Meeting.is_canceled == False,
-        Meeting.participants.any(User.id == user.id)
-    ))
+    meeting_db = await session.scalar(
+        select(Meeting).where(
+            Meeting.id == meeting_id,
+            Meeting.is_canceled == False,
+            Meeting.participants.any(User.id == user.id),
+        )
+    )
     if not meeting_db:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": "No meetings found."}
+            detail={"message": "No meetings found."},
         )
     return meeting_db
