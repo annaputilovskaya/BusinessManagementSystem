@@ -26,7 +26,7 @@ async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Ta
             to access the teams.
     """
 
-    if user and user.is_manager:
+    if user.is_manager:
         if task_in.user_id:
             executor = await session.scalar(
                 select(User).where(
@@ -59,11 +59,6 @@ async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Ta
         await session.commit()
         await session.refresh(new_task)
         return new_task
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."},
-        )
 
 
 async def get_all_tasks(session: AsyncSession, user: User) -> list[Task]:
@@ -82,19 +77,15 @@ async def get_all_tasks(session: AsyncSession, user: User) -> list[Task]:
         - 403 Forbidden: If the user does not have the necessary permissions
             to access the teams.
     """
-    if user:
-        if user.is_manager:
-            tasks = await session.scalars(
-                select(Task).where(Task.team_id == user.team_id)
-            )
-        else:
-            tasks = await session.scalars(select(Task).where(Task.user_id == user.id))
-        return list(tasks)
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."},
+
+    if user.is_manager:
+        tasks = await session.scalars(
+            select(Task).where(Task.team_id == user.team_id)
         )
+    else:
+        tasks = await session.scalars(select(Task).where(Task.user_id == user.id))
+    return list(tasks)
+
 
 
 async def get_filtered_user_tasks(
@@ -118,30 +109,23 @@ async def get_filtered_user_tasks(
     Raises:
         HTTPException:
         - 400 Bad Request: if the date range is invalid.
-        - 403 Forbidden: If the user does not have the necessary permissions
-            to access the teams.
     """
 
-    if user:
-        if start_date <= end_date:
-            tasks = await session.scalars(
-                select(Task)
-                .where(
-                    Task.user_id == user.id, Task.deadline.between(start_date, end_date)
-                )
-                .order_by(Task.deadline)
+    if start_date <= end_date:
+        tasks = await session.scalars(
+            select(Task)
+            .where(
+                Task.user_id == user.id, Task.deadline.between(start_date, end_date)
             )
-            return list(tasks)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Incorrect dates interval."},
-            )
+            .order_by(Task.deadline)
+        )
+        return list(tasks)
     else:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."},
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Incorrect dates interval."},
         )
+
 
 
 async def get_task_by_id(task_id: int, session: AsyncSession, user: User) -> Task:
@@ -158,32 +142,27 @@ async def get_task_by_id(task_id: int, session: AsyncSession, user: User) -> Tas
 
     Raises:
         HTTPException:
-        - 403 Forbidden: If the user is not an active verified user.
         - 404 Not found: If the user does not have the necessary permissions to access the task,
             or task with such ID does not exist in the database.
 
     """
-    if user:
-        if user.is_manager:
-            task = await session.scalar(
-                select(Task).where(Task.id == task_id, Task.team_id == user.team_id)
-            )
-        else:
-            task = await session.scalar(
-                select(Task).where(Task.id == task_id, Task.user_id == user.id)
-            )
 
-        if not task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No tasks found."},
-            )
-        return task
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."},
+    if user.is_manager:
+        task = await session.scalar(
+            select(Task).where(Task.id == task_id, Task.team_id == user.team_id)
         )
+    else:
+        task = await session.scalar(
+            select(Task).where(Task.id == task_id, Task.user_id == user.id)
+        )
+
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No tasks found."},
+        )
+    return task
+
 
 
 async def change_task(
@@ -206,6 +185,7 @@ async def change_task(
     Returns:
         Task: The updated task object after the changes have been applied.
     """
+
     task_dict = task_in.model_dump(exclude_unset=True)
     if task_in.user_id:
         executor = await session.scalar(
@@ -238,6 +218,7 @@ async def progress_task(
     Returns:
         Task: The updated task instance after applying the progress update.
     """
+
     task.status = task_in.status
     return task
 
@@ -254,6 +235,7 @@ def create_comment(comment_in: CommentCreate, task_id: int, user: User) -> Comme
     Returns:
         Comment: The newly created comment associated with the specified task.
     """
+
     new_comment = Comment(text=comment_in.text, task_id=task_id, user_id=user.id)
     return new_comment
 
@@ -273,6 +255,7 @@ async def comment_task(
     Returns:
         Task: The updated task object that now includes the new comment.
     """
+
     task = await get_task_by_id(task_id, session, user)
     session.add(task)
     comment = create_comment(comment_in, task.id, user)
@@ -297,6 +280,7 @@ async def remove_task(
         dict[str, str] | None: A dictionary containing a confirmation message if the
             task was successfully removed.
     """
+
     await session.delete(task)
     await session.commit()
     return {"detail": "Task deleted."}
