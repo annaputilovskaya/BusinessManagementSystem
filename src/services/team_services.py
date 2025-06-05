@@ -5,65 +5,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import User, Team
 
 
-async def add_team(session: AsyncSession, user: User) -> Team:
+async def add_team(session: AsyncSession) -> Team:
     """
     Add a new team to the database.
 
-    Creates a new Team object and adds it to the database
-    if the provided user has the necessary permissions.
-
     Args:
         session (AsyncSession): The database asynchronous session to use for the operation.
-        user (User): The user attempting to add a team. Must have the required permissions.
 
     Returns:
         Team: The newly created Team object.
-
-    Raises:
-        HTTPException: If the user does not have the necessary permissions
-        to add a team, a 403 Forbidden error is raised.
     """
 
-    if user:
-        new_team = Team()
-        session.add(new_team)
-        await session.commit()
-        await session.refresh(new_team)
-        return new_team
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
-        )
+    new_team = Team()
+    session.add(new_team)
+    await session.commit()
+    await session.refresh(new_team)
+    return new_team
 
 
-async def get_all_teams(session: AsyncSession, user: User) -> list[Team]:
+
+async def get_all_teams(session: AsyncSession) -> list[Team]:
     """
     Retrieve all teams from the database.
 
-    Retrieves a list of all Team objects from the database
-    if the provided user has the necessary permissions.
-
     Args:
         session (AsyncSession): The database session to use for the operation.
-        user (User): The user attempting to retrieve the teams. Must have the required permissions.
 
     Returns:
         list[Team]: A list of Team objects.
-
-    Raises:
-        HTTPException: If the user does not have the necessary permissions
-        to access the teams, a 403 Forbidden error is raised.
     """
 
-    if user:
-        teams = await session.scalars(select(Team))
-        return list(teams)
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
-        )
+    teams = await session.scalars(select(Team))
+    return list(teams)
+
 
 
 async def add_team_id_to_team_members(
@@ -74,7 +48,7 @@ async def add_team_id_to_team_members(
     """Assign a team ID to multiple user members in the database.
 
     Updates the team ID for a list of users, associating
-    them with the specified team, assuming the user has the necessary permissions.
+    them with the specified team.
 
     Args:
         user_ids (list[int]): A list of user IDs to be updated with the team ID.
@@ -86,7 +60,7 @@ async def add_team_id_to_team_members(
 
     Raises:
         HTTPException:
-            - If no users are found for the provided user IDs, a 404 Not Found error is raised.
+            - 404 Not Found: If no users are found for the provided user IDs.
     """
 
     users_update = await session.scalars(select(User).where(User.id.in_(user_ids)))

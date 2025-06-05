@@ -12,41 +12,29 @@ from src.models.meeting import Meeting
 async def get_team_by_id(
         team_id: Annotated[int, Path],
         session: AsyncSession = Depends(dbh.session_getter),
-        user: User = Depends(current_active_verified_user)
 ) -> Team:
     """
     Retrieve a team from the database by ID.
 
-    Retrieves a specific Team object from the database
-    based on the provided team ID if the user has the necessary permissions.
-
     Args:
         team_id (Annotated[int, Path]): The ID of the team to retrieve.
         session (AsyncSession): The database asynchronous session to use for the operation.
-        user (User, optional): The currently active verified user.
 
     Returns:
         Team: The Team object associated with the specified team ID.
 
     Raises:
             HTTPException:
-            - 403 Forbidden: if the user does not have the necessary permissions.
             - 404 Not Found: if the specified team is not found.
     """
 
-    if user:
-        team = await session.scalar(select(Team).where(Team.id == team_id))
-        if not team:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No teams found."}
-            )
-        return team
-    else:
+    team = await session.scalar(select(Team).where(Team.id == team_id))
+    if not team:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No teams found."}
         )
+    return team
 
 
 async def get_task_by_id_executor(
@@ -67,23 +55,17 @@ async def get_task_by_id_executor(
 
     Raises:
         HTTPException:
-        - 403 Forbidden: if the user is not an active verified user.
         - 404 Not found: if the user does not have the necessary permissions to access the task,
             or task with such ID does not exist in the database.
     """
-    if user:
-        task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
-        if not task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "No tasks found."}
-            )
-        return task
-    else:
+
+    task = await session.scalar(select(Task).where(Task.id == task_id, Task.user_id == user.id))
+    if not task:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"message": "Not enough permissions for the action."}
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No tasks found."}
         )
+    return task
 
 
 async def get_task_by_id_manager(
@@ -108,7 +90,7 @@ async def get_task_by_id_manager(
         - 404 Not found: if the user does not have the necessary permissions to access the task,
             or task with such ID does not exist in the database.
     """
-    if user and user.is_manager:
+    if user.is_manager:
         task = await session.scalar(select(Task).where(Task.id == task_id, Task.team_id == user.team_id))
         if not task:
             raise HTTPException(
