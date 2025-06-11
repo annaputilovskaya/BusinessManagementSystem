@@ -1,10 +1,12 @@
 from datetime import date
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import Evaluation, Task, User
+from src.models.enums import StatusEnum
 from src.schemas.evaluation_schemas import EvaluationCreateSchema
 from src.services.utils import check_dates
 
@@ -36,7 +38,7 @@ async def add_evaluation(
             status_code=status.HTTP_409_CONFLICT,
             detail={"message": "An evaluation for the task already exists."},
         )
-    elif task.status == "done":
+    elif task.status == StatusEnum.DONE:
         new_evaluation = Evaluation(number=evaluation_in.number, task_id=task.id)
         session.add(new_evaluation)
         await session.commit()
@@ -50,7 +52,7 @@ async def add_evaluation(
 
 
 async def get_user_evaluations(
-    executor_id: int,
+    executor_id: UUID,
     session: AsyncSession,
     user: User,
     start_date: date | None = None,
@@ -60,7 +62,7 @@ async def get_user_evaluations(
     Retrieves evaluations for a specific user within an optional date range.
 
     Args:
-        executor_id (int): The ID of the user whose evaluations are to be retrieved.
+        executor_id (UUID): The UUID of the user whose evaluations are to be retrieved.
         session (AsyncSession): The asynchronous database session for querying.
         user (User): The current user requesting the evaluations.
         start_date (Optional(date)): The optional start date for filtering evaluations (default is None).
@@ -102,7 +104,7 @@ async def get_user_evaluations(
 
 
 async def get_user_average_evaluation(
-    executor_id: int,
+    executor_id: UUID,
     session: AsyncSession,
     user: User,
     start_date: date | None = None,
@@ -116,7 +118,7 @@ async def get_user_average_evaluation(
     evaluations, it returns None.
 
     Args:
-        executor_id (int): The ID of the user whose average evaluation is to be calculated.
+        executor_id (UUID): The UUID of the user whose average evaluation is to be calculated.
         session (AsyncSession): The asynchronous database session for querying.
         user (User): The current user requesting the average evaluation.
         start_date (Optional(date)): The optional start date for filtering evaluations (default is None).
