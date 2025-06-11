@@ -1,7 +1,7 @@
 from datetime import date
-from typing import Any
+from uuid import UUID
 
-from sqlalchemy import ForeignKey, Date
+from sqlalchemy import ForeignKey, Date, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.functions import current_date
 
@@ -13,14 +13,18 @@ class Evaluation(Base):
 
     Attributes:
         number (SmallInteger): The evaluation score.
-        task_id (int): The identifier for the associated task.
+        task_id (UUID): The identifier for the associated task.
         created_at (date): The date of evaluation creation.
         task (Task): The task associated with this evaluation,
             establishing a relationship back to the Task model.
     """
 
+    __table_args__ = (
+        CheckConstraint('number >= 1 AND number <= 5', name='check_number_range'),
+    )
+
     number: Mapped[int]
-    task_id: Mapped[int] = mapped_column(
+    task_id: Mapped[UUID] = mapped_column(
         ForeignKey("tasks.id", ondelete="CASCADE"), index=True, unique=True
     )
     created_at: Mapped[date] = mapped_column(
@@ -29,27 +33,29 @@ class Evaluation(Base):
     )
     task: Mapped["Task"] = relationship("Task", back_populates="evaluation")
 
-    def __init__(self, number, task_id, **kw: Any):
-        """
-        Initializes an Evaluation instance.
 
-        Args:
-            number (int): The evaluation score, which must be between 1 and 5.
-            task_id (int): The identifier for the associated task.
-            **kw (Any): Additional keyword arguments to be passed to the base class.
 
-        Raises:
-            ValueError: If the number is not between 1 and 5.
-        """
-        super().__init__(**kw)
-        if number < 1 or number > 5:
-            raise ValueError("Number must be between 1 and 5")
-        self.number = number
-        self.task_id = task_id
+    # def __init__(self, number, task_id, **kw: Any):
+    #     """
+    #     Initializes an Evaluation instance.
+    #
+    #     Args:
+    #         number (int): The evaluation score, which must be between 1 and 5.
+    #         task_id (UUID): The identifier for the associated task.
+    #         **kw (Any): Additional keyword arguments to be passed to the base class.
+    #
+    #     Raises:
+    #         ValueError: If the number is not between 1 and 5.
+    #     """
+    #     super().__init__(**kw)
+    #     if number < 1 or number > 5:
+    #         raise ValueError("Number must be between 1 and 5")
+    #     self.number = number
+    #     self.task_id = task_id
 
     def __str__(self):
         """
         Returns the string representation of the evaluation object.
         """
 
-        return str(self.number)
+        return f'{self.task_id}: {self.number}'
