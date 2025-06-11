@@ -1,4 +1,5 @@
 from datetime import date, datetime, time
+from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -12,12 +13,12 @@ class MeetingCreateSchema(BaseModel):
     Attributes:
         meet_date (date): Date of the meeting.
         meet_time (time): Time of the meeting.
-        participants (list(int)): User IDs who participate in the meeting.
+        participants (list(UUID)): User IDs who participate in the meeting.
     """
 
     meet_date: date = Field(ge=datetime.now().date())
     meet_time: time = Field(ge=time(8), le=time(20))
-    participants: list[int]
+    participants: list[UUID]
 
     @model_validator(mode="after")
     def check_meeting_datetime(self):
@@ -35,13 +36,13 @@ class MeetingReadSchema(BaseModel):
     Meeting read schema.
 
     Attributes:
-        id: The identifier of the meeting.
+        id(UUID): The identifier of the meeting.
         meet_date (date): Date of the meeting.
         meet_time (time): Time of the meeting.
         participants (list(UserReadSchema)): The list of users who participate in the meeting.
     """
 
-    id: int
+    id: UUID
     meet_date: date
     meet_time: time
     participants: list[UserRead]
