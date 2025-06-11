@@ -1,6 +1,10 @@
+from uuid import UUID
+
 from fastapi import Depends
 from fastapi.security import HTTPBearer
 from fastapi_users import FastAPIUsers
+from fastapi_users.db import BaseUserDatabase
+from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.auth_backend import authentication_backend
@@ -23,18 +27,18 @@ async def get_user_db(
            dependency injection.
 
     Yields:
-        UserDB: An instance of the user database for the current session.
+        UserDB (BaseUserDatabase): An instance of the user database for the current session.
 
     """
-    yield User.get_db(session=session)
+    yield SQLAlchemyUserDatabase(session=session, user_table=User)
 
 
-async def get_user_manager(user_db=Depends(get_user_db)):
+async def get_user_manager(user_db: BaseUserDatabase[User, UUID] = Depends(get_user_db)):
     """
     Creates and retrieves a user manager instance.
 
     Args:
-        user_db (UserDB): The user in database instance obtained through
+        user_db (BaseUserDatabase): The user in database instance obtained through
         dependency injection.
 
     Yields:
@@ -44,7 +48,7 @@ async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
 
-fastapi_users = FastAPIUsers[User, int](
+fastapi_users = FastAPIUsers[User, UUID](
     get_user_manager,
     [authentication_backend],
 )
