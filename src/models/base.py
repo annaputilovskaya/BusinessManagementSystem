@@ -1,4 +1,7 @@
-from sqlalchemy import MetaData
+from uuid import UUID, uuid4
+
+from sqlalchemy import MetaData, UUID as UUID_SQL
+
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, declared_attr
 
 
@@ -16,14 +19,19 @@ class Base(DeclarativeBase):
     Base abstract class for ORM models.
 
     Attributes:
-        id (int): The unique identifier for the object.
+        id (UUID): The universally unique identifier for the object.
     """
 
     __abstract__ = True
 
     metadata = MetaData(naming_convention=naming_convention)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(
+        UUID_SQL(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+        index=True,
+    )
 
     @declared_attr.directive
     def __tablename__(cls) -> str:
