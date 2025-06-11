@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -127,7 +128,7 @@ async def get_filtered_user_tasks(
         )
 
 
-async def get_task_by_id(task_id: int, session: AsyncSession, user: User) -> Task:
+async def get_task_by_id(task_id: UUID, session: AsyncSession, user: User) -> Task:
     """
     Retrieve a task from the database by ID.
 
@@ -201,6 +202,7 @@ async def change_task(
 async def progress_task(
     task_in: TaskUpdate,
     task: Task,
+    session: AsyncSession
 ) -> Task:
     """
     Updates the progress of a given task.
@@ -212,22 +214,27 @@ async def progress_task(
         task_in (TaskUpdate): An object containing the details of the task update,
             such as status changes.
         task (Task): The current task instance that is to be updated.
+        session (AsyncSession): The database session used for committing the changes.
+
 
     Returns:
         Task: The updated task instance after applying the progress update.
     """
 
     task.status = task_in.status
+    session.add(task)
+    await session.commit()
+    await session.refresh(task)
     return task
 
 
-def create_comment(comment_in: CommentCreate, task_id: int, user: User) -> Comment:
+def create_comment(comment_in: CommentCreate, task_id: UUID, user: User) -> Comment:
     """
     Creates a new comment for a specified task.
 
     Args:
         comment_in (CommentCreate): An object containing the text of the comment.
-        task_id (int): The ID of the task for which the comment is being created.
+        task_id (UUID): The UUID of the task for which the comment is being created.
         user (User): The user who is creating the comment.
 
     Returns:
@@ -239,14 +246,14 @@ def create_comment(comment_in: CommentCreate, task_id: int, user: User) -> Comme
 
 
 async def comment_task(
-    comment_in: CommentCreate, task_id: int, session: AsyncSession, user: User
+    comment_in: CommentCreate, task_id: UUID, session: AsyncSession, user: User
 ) -> Task:
     """
     Adds a comment to a specified task.
 
     Args:
         comment_in (CommentCreate): An object containing the text of the comment.
-        task_id (int): The ID of the task to which the comment will be added.
+        task_id (UUID): The UUID of the task to which the comment will be added.
         session (AsyncSession): The asynchronous session to interact with the database.
         user (User): The user who is adding the comment.
 

@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,7 +37,7 @@ async def get_tasks(
 
 @router.get("/{task_id}", summary="Show task.", response_model=TaskRead)
 async def get_task(
-    task_id: Annotated[int, Path],
+    task_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
 ):
@@ -57,14 +58,16 @@ async def modify_task(
 async def update_task(
     task_in: TaskUpdate,
     task: Task = Depends(dependencies.get_task_by_id_executor),
+    session: AsyncSession = Depends(dbh.session_getter),
+
 ):
-    return await task_services.progress_task(task_in, task)
+    return await task_services.progress_task(task_in, task, session)
 
 
 @router.patch("/{task_id}/comment", summary="Add comment.", response_model=TaskRead)
 async def add_comment(
     comment_in: CommentCreate,
-    task_id: Annotated[int, Path],
+    task_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
 ):
