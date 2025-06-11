@@ -1,4 +1,6 @@
-from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+from uuid import UUID
+
+from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase, SQLAlchemyBaseUserTableUUID, UUID_ID
 from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, relationship, mapped_column
@@ -6,14 +8,14 @@ from sqlalchemy.orm import Mapped, relationship, mapped_column
 from src.models import Base, Team
 
 
-class User(Base, SQLAlchemyBaseUserTable[int]):
+class User(Base, SQLAlchemyBaseUserTableUUID):
     """
     User model.
 
     Attributes:
         is_manager (bool): Indicates whether the user is a manager.
             Defaults to False.
-        team_id (Optional[int]): The ID of the team the user belongs to.
+        team_id (Optional[UUID]): The UUID of the team the user belongs to.
             It can be set to None if the user is not associated with any team.
         team (Team): The team associated with this user, linked via
             a relationship.
@@ -22,12 +24,12 @@ class User(Base, SQLAlchemyBaseUserTable[int]):
     """
 
     is_manager: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    team_id: Mapped[int | None] = mapped_column(
+    team_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("teams.id", ondelete="SET NULL")
     )
 
     team: Mapped["Team"] = relationship("Team", back_populates="members")
-    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="executor")
+    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="user")
 
     meetings: Mapped[list["Meeting"]] = relationship(
         "Meeting",

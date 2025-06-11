@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -19,9 +20,9 @@ class EvaluationReadSchema(EvaluationCreateSchema):
     Evaluation read schema.
 
     Attributes:
-        task_id (int): The identifier for the associated task.
+        task_id (UUID): The identifier for the associated task.
         created_at (date): The date of evaluation creation.
     """
 
     created_at: date
-    task_id: int
+    task_id: UUID

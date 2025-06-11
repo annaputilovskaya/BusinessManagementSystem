@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,7 +46,7 @@ async def get_team(team: Team = Depends(get_team_by_id)):
     "/{team_id}", summary="Update team members.", status_code=status.HTTP_200_OK
 )
 async def update_team(
-    user_ids: list[int],
+    user_ids: list[UUID],
     team: Team = Depends(get_team_by_id),
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_superuser),

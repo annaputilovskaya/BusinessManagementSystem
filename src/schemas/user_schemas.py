@@ -1,18 +1,21 @@
+from uuid import UUID
+
 from fastapi_users import schemas
 from fastapi_users.schemas import model_dump
 
 
-class UserRead(schemas.BaseUser[int]):
+class UserRead(schemas.BaseUser[UUID]):
     """
     User read schema.
 
     Attributes:
         is_manager (bool): Indicates if the user has manager privileges.
         Defaults to False.
+        team_id (UUID): The UUID of the team, associated with user.
     """
 
     is_manager: bool = False
-    team_id: int | None = None
+    team_id: UUID | None = None
 
 
 class UserCreate(schemas.BaseUserCreate):
@@ -22,10 +25,11 @@ class UserCreate(schemas.BaseUserCreate):
     Attributes:
         is_manager (bool): Indicates if the user being created has
         manager privileges. Defaults to False.
+        team_id (UUID): The UUID of the team, associated with user.
     """
 
     is_manager: bool = False
-    team_id: int | None = None
+    team_id: UUID | None = None
 
     def create_update_dict(self):
         """
@@ -66,10 +70,12 @@ class UserUpdate(schemas.BaseUserUpdate):
     Attributes:
         is_manager (bool): Indicates if the user should be updated to
         have manager privileges. Defaults to False.
+        team_id (UUID): The UUID of the team, associated with user.
+
     """
 
     is_manager: bool = False
-    team_id: int | None = None
+    team_id: UUID | None = None
 
     def create_update_dict(self):
         """

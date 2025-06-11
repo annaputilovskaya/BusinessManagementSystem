@@ -1,7 +1,8 @@
 import logging
+from uuid import UUID
 
 from fastapi import Request
-from fastapi_users import IntegerIDMixin, BaseUserManager
+from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users.jwt import SecretType
 
 from src.config import settings
@@ -10,7 +11,7 @@ from src.models.user import User
 log = logging.getLogger(__name__)
 
 
-class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
+class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
     """
     Manages user-related operations such as registration, password reset, and verification.
 

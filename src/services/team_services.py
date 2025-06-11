@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,7 +41,7 @@ async def get_all_teams(session: AsyncSession) -> list[Team]:
 
 
 async def add_team_id_to_team_members(
-    user_ids: list[int],
+    user_ids: list[UUID],
     team: Team,
     session: AsyncSession,
 ) -> dict[str, str]:
@@ -49,7 +51,7 @@ async def add_team_id_to_team_members(
     them with the specified team.
 
     Args:
-        user_ids (list[int]): A list of user IDs to be updated with the team ID.
+        user_ids (list[UUID]): A list of user IDs to be updated with the team ID.
         team (Team): The Team object that the users will be associated with.
         session (AsyncSession): The database asynchronous session to use for the operation.
 

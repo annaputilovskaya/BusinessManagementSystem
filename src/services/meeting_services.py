@@ -1,4 +1,5 @@
 from datetime import date, time
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -9,7 +10,7 @@ from src.schemas.meeting_schemas import MeetingCreateSchema
 
 
 async def check_schedule_conflict(
-    participant_ids: list[int],
+    participant_ids: list[UUID],
     meeting_date: date,
     meeting_time: time,
     session: AsyncSession,
@@ -21,7 +22,7 @@ async def check_schedule_conflict(
     and within one hour before or after the specified meeting time.
 
     Args:
-        participant_ids (list[int]): A list of participant user IDs to check for conflicts.
+        participant_ids (list[UUID]): A list of participant user IDs to check for conflicts.
         meeting_date (date): The date of the proposed meeting.
         meeting_time (time): The time of the proposed meeting.
         session (AsyncSession): The asynchronous database session to use for querying.

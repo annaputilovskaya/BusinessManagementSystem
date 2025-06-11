@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +32,7 @@ async def create_evaluation(
 
 @router.get("/all/{user_id}", summary="Show user's evaluations.")
 async def get_evaluations(
-    executor_id: Annotated[int, Path],
+    executor_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
     start_date: date | None = None,
@@ -44,7 +45,7 @@ async def get_evaluations(
 
 @router.get("/average/{user_id}", summary="Show user's average.")
 async def get_average_evaluation(
-    executor_id: Annotated[int, Path],
+    executor_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
     start_date: date | None = None,

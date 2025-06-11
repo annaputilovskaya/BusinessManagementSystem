@@ -1,4 +1,5 @@
 from datetime import date, time
+from uuid import UUID
 
 from sqlalchemy import UniqueConstraint, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,10 +18,10 @@ class MeetingUserAssociation(Base):
         UniqueConstraint("meeting_id", "user_id", name="idx_unique_meeting_user"),
     )
 
-    meeting_id: Mapped[int] = mapped_column(
+    meeting_id: Mapped[UUID] = mapped_column(
         ForeignKey("meetings.id", ondelete="CASCADE"),
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
 
 class Meeting(Base):

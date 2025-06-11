@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import HTTPException, Path, Depends, status
 from sqlalchemy import select
@@ -10,14 +11,14 @@ from src.models.meeting import Meeting
 
 
 async def get_team_by_id(
-    team_id: Annotated[int, Path],
+    team_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
 ) -> Team:
     """
     Retrieve a team from the database by ID.
 
     Args:
-        team_id (Annotated[int, Path]): The ID of the team to retrieve.
+        team_id (Annotated[UUID, Path]): The ID of the team to retrieve.
         session (AsyncSession): The database asynchronous session to use for the operation.
 
     Returns:
@@ -37,7 +38,7 @@ async def get_team_by_id(
 
 
 async def get_task_by_id_executor(
-    task_id: Annotated[int, Path],
+    task_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
 ) -> Task:
@@ -45,7 +46,7 @@ async def get_task_by_id_executor(
     Retrieve a task from the database by ID if user is not a manager.
 
     Args:
-        task_id (int): The ID of the task to retrieve.
+        task_id (UUID): The ID of the task to retrieve.
         session (AsyncSession): The database session to be used for querying.
         user (User): The user for whom tasks are to be retrieved.
 
@@ -69,7 +70,7 @@ async def get_task_by_id_executor(
 
 
 async def get_task_by_id_manager(
-    task_id: Annotated[int, Path],
+    task_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
 ) -> Task:
@@ -77,7 +78,7 @@ async def get_task_by_id_manager(
     Retrieve a task from the database by ID if user is a manager.
 
     Args:
-        task_id (int): The ID of the task to retrieve.
+        task_id (UUID): The ID of the task to retrieve.
         session (AsyncSession): The database session to be used for querying.
         user (User): The user for whom tasks are to be retrieved.
 
@@ -108,7 +109,7 @@ async def get_task_by_id_manager(
 
 
 async def get_meeting_by_id(
-    meeting_id: Annotated[int, Path],
+    meeting_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_user),
 ) -> Meeting:
@@ -118,7 +119,7 @@ async def get_meeting_by_id(
     Show meeting if it's not canceled.
 
     Args:
-        meeting_id (int): The ID of the meeting to retrieve.
+        meeting_id (UUID): The ID of the meeting to retrieve.
         session (AsyncSession): The database session to be used for querying.
         user (User): The user for whom meeting are to be retrieved.
 
