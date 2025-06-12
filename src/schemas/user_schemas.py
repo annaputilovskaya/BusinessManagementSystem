@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from fastapi_users import schemas
-from fastapi_users.schemas import model_dump
 
 
 class UserRead(schemas.BaseUser[UUID]):
@@ -45,7 +44,7 @@ class UserCreate(schemas.BaseUserCreate):
             unset values and protected attributes.
         """
 
-        return model_dump(
+        return schemas.model_dump(
             self,
             exclude_unset=True,
             exclude={
@@ -90,7 +89,7 @@ class UserUpdate(schemas.BaseUserUpdate):
             dict: A dictionary containing the user's fields, excluding
             unset values and protected attributes.
         """
-        return model_dump(
+        return schemas.model_dump(
             self,
             exclude_unset=True,
             exclude={
