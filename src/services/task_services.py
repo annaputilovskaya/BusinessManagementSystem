@@ -27,7 +27,7 @@ async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Ta
             to access the teams.
     """
 
-    if user.is_manager:
+    if user.is_manager and user.team_id:
         if task_in.user_id:
             executor = await session.scalar(
                 select(User).where(
