@@ -2,7 +2,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import HTTPException, Path, Depends, status
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user
@@ -135,10 +135,12 @@ async def get_meeting_by_id(
 
     meeting_db = await session.scalar(
         select(Meeting).where(
-            Meeting.id == meeting_id,
-            Meeting.is_canceled == False,
-            Meeting.participants.any(User.id == user.id),
-        )
+            and_(
+                Meeting.id == meeting_id,
+                Meeting.is_canceled.is_(False),
+                User.id == user.id
+            )
+        ).join(Meeting.participants)
     )
     if not meeting_db:
         raise HTTPException(
