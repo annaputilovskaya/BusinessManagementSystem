@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "businessmanagementsystem"
+name = "business_management_system"
 version = "0.1.0"
 description = ""
 authors = ["anna putilovskaya <putilovskayaam@gmail.com>"]
@@ -7,7 +7,23 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+fastapi = {extras = ["standard"], version = "^0.115.12"}
+asyncpg = "^0.30.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.40"}
+alembic = "^1.15.2"
+pydantic-settings = "^2.9.1"
+fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.1"}
+sqladmin = {extras = ["full"], version = "^0.20.1"}
+alembic-postgresql-enum = "^1.7.0"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+flake8 = "^7.2.0"
+pytest = "^8.3.5"
+pytest-asyncio = "^1.0.0"
+pytest-cov = "^6.1.1"
+asgi-lifespan = "^2.1.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: on-failure
+    env_file:
+      - .env
+    expose:
+      - "5432"
+    volumes:
+       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "-c", "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    tty: true
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    command: sh -c "alembic upgrade head && fastapi run src/main.py --port 8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+
+volumes:
+  pg_data:
