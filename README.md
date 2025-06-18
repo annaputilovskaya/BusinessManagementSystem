@@ -45,7 +45,7 @@
 ---
 ### Структура базы данных:
 
-![Снимок](https://github.com/user-attachments/assets/ca6051ba-66ec-447f-b7cb-c75f6a4fab62)
+![image](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
 
 ---
 ### Функционал и бизнес-логика
