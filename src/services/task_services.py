@@ -228,48 +228,6 @@ async def progress_task(
     return task
 
 
-def create_comment(comment_in: CommentCreate, task_id: UUID, user: User) -> Comment:
-    """
-    Creates a new comment for a specified task.
-
-    Args:
-        comment_in (CommentCreate): An object containing the text of the comment.
-        task_id (UUID): The UUID of the task for which the comment is being created.
-        user (User): The user who is creating the comment.
-
-    Returns:
-        Comment: The newly created comment associated with the specified task.
-    """
-
-    new_comment = Comment(text=comment_in.text, task_id=task_id, user_id=user.id)
-    return new_comment
-
-
-async def comment_task(
-    comment_in: CommentCreate, task_id: UUID, session: AsyncSession, user: User
-) -> Task:
-    """
-    Adds a comment to a specified task.
-
-    Args:
-        comment_in (CommentCreate): An object containing the text of the comment.
-        task_id (UUID): The UUID of the task to which the comment will be added.
-        session (AsyncSession): The asynchronous session to interact with the database.
-        user (User): The user who is adding the comment.
-
-    Returns:
-        Task: The updated task object that now includes the new comment.
-    """
-
-    task = await get_task_by_id(task_id, session, user)
-    session.add(task)
-    comment = create_comment(comment_in, task.id, user)
-    session.add(comment)
-    await session.commit()
-    await session.refresh(task)
-    return task
-
-
 async def remove_task(
     task: Task,
     session: AsyncSession,
@@ -289,3 +247,67 @@ async def remove_task(
     await session.delete(task)
     await session.commit()
     return {"detail": "Task deleted."}
+
+
+def create_comment(comment_in: CommentCreate, task_id: UUID, user: User) -> Comment:
+    """
+    Creates a new comment for a specified task.
+
+    Args:
+        comment_in (CommentCreate): An object containing the text of the comment.
+        task_id (UUID): The UUID of the task for which the comment is being created.
+        user (User): The user who is creating the comment.
+
+    Returns:
+        Comment: The newly created comment associated with the specified task.
+    """
+
+    new_comment = Comment(text=comment_in.text, task_id=task_id, user_id=user.id)
+    return new_comment
+
+
+async def add_comment(
+        comment_in: CommentCreate,
+        task_id: UUID,
+        session: AsyncSession,
+        user: User
+) -> Comment:
+    """
+    Adds a task comment to database.
+
+    Args:
+        comment_in (CommentCreate): An object containing the text of the comment.
+        task_id (UUID): The UUID of the task to which the comment will be added.
+        session (AsyncSession): The asynchronous session to interact with the database.
+        user (User): The user who is adding the comment.
+    """
+    comment = create_comment(comment_in, task_id, user)
+    session.add(comment)
+    await session.commit()
+    await session.refresh(comment)
+    return comment
+
+
+# async def comment_task(
+#     comment_in: CommentCreate, task_id: UUID, session: AsyncSession, user: User
+# ) -> Task:
+#     """
+#     Adds a comment to a specified task.
+#
+#     Args:
+#         comment_in (CommentCreate): An object containing the text of the comment.
+#         task_id (UUID): The UUID of the task to which the comment will be added.
+#         session (AsyncSession): The asynchronous session to interact with the database.
+#         user (User): The user who is adding the comment.
+#
+#     Returns:
+#         Task: The updated task object that now includes the new comment.
+#     """
+#
+#     task = await get_task_by_id(task_id, session, user)
+#     session.add(task)
+#     comment = create_comment(comment_in, task.id, user)
+#     session.add(comment)
+#     await session.commit()
+#     await session.refresh(task)
+#     return task
