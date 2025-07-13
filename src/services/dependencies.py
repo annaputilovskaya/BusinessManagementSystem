@@ -69,6 +69,28 @@ async def get_task_by_id_executor(
     return task
 
 
+async def get_team_task_by_id(
+    task_id: UUID,
+    session: AsyncSession,
+    user: User
+) -> Task | None:
+    """
+    Retrieve a task from the database by ID if user is in executor team.
+
+    Args:
+        task_id (UUID): The ID of the task to retrieve.
+        session (AsyncSession): The database session to be used for querying.
+        user (User): The user for whom tasks are to be retrieved.
+
+    Returns:
+        Task: A Task object associated with the specified task ID.
+    """
+    task = await session.scalar(
+        select(Task).where(Task.id == task_id, Task.team_id == user.team_id)
+    )
+    return task
+
+
 async def get_task_by_id_manager(
     task_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
@@ -92,9 +114,7 @@ async def get_task_by_id_manager(
             or task with such ID does not exist in the database.
     """
     if user.is_manager:
-        task = await session.scalar(
-            select(Task).where(Task.id == task_id, Task.team_id == user.team_id)
-        )
+        task = await get_team_task_by_id(task_id, session, user)
         if not task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
