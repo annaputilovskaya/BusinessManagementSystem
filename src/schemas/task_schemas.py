@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -14,9 +14,11 @@ class CommentCreate(BaseModel):
 
     Attributes:
         text(str): The comment text.
+        created_at(datetime) The date and the time of the comment creation.
     """
 
     text: str
+    created_at: datetime = Field(default=datetime.now(tz=timezone.utc))
 
 
 class CommentRead(CommentCreate):
@@ -24,12 +26,10 @@ class CommentRead(CommentCreate):
     Comment read schema.
 
     Attributes:
-        created_at(datetime) The date and the time of the comment creation.
         user_id (UUID): The ID of the user, who has created the comment.
 
     """
 
-    created_at: datetime
     user_id: UUID
 
 
