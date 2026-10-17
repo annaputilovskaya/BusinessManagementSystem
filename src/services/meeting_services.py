@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime, time, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -18,8 +18,10 @@ async def check_schedule_conflict(
     """
     Checks for scheduling conflicts for a list of participants.
 
-    A conflict is considered to occur if there is a meeting in the same date
-    and within one hour before or after the specified meeting time.
+    A conflict is considered to occur if there is a meeting within one hour
+    before or after the specified meeting datetime. The check is timezone-free
+    and correctly handles the midnight boundary (e.g. a 00:30 meeting conflicts
+    with a 23:30 meeting of the previous day).
 
     Args:
         participant_ids (list[UUID]): A list of participant user IDs to check for conflicts.
@@ -31,19 +33,25 @@ async def check_schedule_conflict(
         list[Meeting]: A list of Meeting objects that conflict with the proposed meeting.
     """
 
-    time_minus_hour = time(meeting_time.hour - 1, meeting_time.minute)
-    time_plus_hour = time(meeting_time.hour + 1, meeting_time.minute)
-    conflicts = await session.scalars(
+    proposed = datetime.combine(meeting_date, meeting_time)
+    window_start = proposed - timedelta(hours=1)
+    window_end = proposed + timedelta(hours=1)
+    candidates = await session.scalars(
         select(Meeting)
         .join(MeetingUserAssociation)
         .where(
             MeetingUserAssociation.user_id.in_(participant_ids),
-            Meeting.meet_date == meeting_date,
             Meeting.is_canceled.is_(False),
-            Meeting.meet_time.between(time_minus_hour, time_plus_hour),
+            Meeting.meet_date.between(window_start.date(), window_end.date()),
         )
     )
-    return list(conflicts)
+    return [
+        meeting
+        for meeting in candidates
+        if window_start
+        <= datetime.combine(meeting.meet_date, meeting.meet_time)
+        <= window_end
+    ]
 
 
 async def add_meeting(
