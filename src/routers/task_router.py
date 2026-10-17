@@ -133,10 +133,10 @@ async def comment(
             "text": comment.text,
             "created_at": comment.created_at.isoformat(),
         }
-        for comment in task.comments
+        for comment in sorted(task.comments, key=lambda c: (c.created_at, c.id))
     ]
-    await websocket.send_json(history)
     try:
+        await websocket.send_json(history)
         while True:
             raw = await websocket.receive_text()
             try:
@@ -166,4 +166,6 @@ async def comment(
                 },
             )
     except WebSocketDisconnect:
+        pass
+    finally:
         manager.disconnect(task_id=task_id, user_id=user.id)
