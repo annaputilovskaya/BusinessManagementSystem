@@ -30,7 +30,7 @@ async def create_evaluation(
     return await evaluation_services.add_evaluation(evaluation_in, task, session)
 
 
-@router.get("/all/{user_id}", summary="Show user's evaluations.")
+@router.get("/all/{executor_id}", summary="Show user's evaluations.")
 async def get_evaluations(
     executor_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
@@ -43,7 +43,7 @@ async def get_evaluations(
     )
 
 
-@router.get("/average/{user_id}", summary="Show user's average.")
+@router.get("/average/{executor_id}", summary="Show user's average.")
 async def get_average_evaluation(
     executor_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
