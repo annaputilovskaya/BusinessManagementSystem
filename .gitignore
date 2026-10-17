@@ -121,3 +121,7 @@ cython_debug/
 .idea/
 
 certs/
+
+__pycache__/
+*.pyc
+.ruff_cache/

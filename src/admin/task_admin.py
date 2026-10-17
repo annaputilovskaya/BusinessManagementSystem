@@ -1,6 +1,6 @@
 from sqladmin import ModelView
 
-from src.models import Task, Comment
+from src.models import Comment, Task
 
 
 class TaskAdmin(ModelView, model=Task):

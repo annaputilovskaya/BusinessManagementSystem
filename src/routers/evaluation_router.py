@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from src.auth.dependencies import http_bearer, current_active_verified_user
-from src.models import Task, dbh, User
-from src.schemas.evaluation_schemas import EvaluationReadSchema, EvaluationCreateSchema
-from src.services.dependencies import get_task_by_id_manager
+from src.auth.dependencies import current_active_verified_user, http_bearer
+from src.models import Task, User, dbh
+from src.schemas.evaluation_schemas import EvaluationCreateSchema, EvaluationReadSchema
 from src.services import evaluation_services
+from src.services.dependencies import get_task_by_id_manager
 
 router = APIRouter(
     prefix="/evaluations", tags=["Evaluations"], dependencies=[Depends(http_bearer)]

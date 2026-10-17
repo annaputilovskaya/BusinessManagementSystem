@@ -33,7 +33,9 @@ async def get_user_db(
     yield SQLAlchemyUserDatabase(session=session, user_table=User)
 
 
-async def get_user_manager(user_db: BaseUserDatabase[User, UUID] = Depends(get_user_db)):
+async def get_user_manager(
+    user_db: BaseUserDatabase[User, UUID] = Depends(get_user_db),
+):
     """
     Creates and retrieves a user manager instance.
 

@@ -5,9 +5,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-import alembic_postgresql_enum
 from alembic import context
-
 from src.config import settings
 from src.models import Base
 
@@ -29,7 +27,10 @@ target_metadata = Base.metadata
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
-config.set_main_option("sqlalchemy.url", str(settings.db.url))
+import os
+
+db_url = os.environ.get("DATABASE_URL", str(settings.db.url))
+config.set_main_option("sqlalchemy.url", db_url)
 
 
 def run_migrations_offline() -> None:

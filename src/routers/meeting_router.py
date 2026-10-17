@@ -3,9 +3,9 @@ from datetime import date
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.dependencies import http_bearer, current_active_verified_user
-from src.models import User, dbh, Meeting
-from src.schemas.meeting_schemas import MeetingReadSchema, MeetingCreateSchema
+from src.auth.dependencies import current_active_verified_user, http_bearer
+from src.models import Meeting, User, dbh
+from src.schemas.meeting_schemas import MeetingCreateSchema, MeetingReadSchema
 from src.services import meeting_services
 from src.services.dependencies import get_meeting_by_id
 

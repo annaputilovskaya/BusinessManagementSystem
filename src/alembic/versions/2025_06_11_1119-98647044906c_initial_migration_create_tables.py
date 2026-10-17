@@ -8,9 +8,10 @@ Create Date: 2025-06-11 11:19:16.388646
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "98647044906c"
@@ -74,12 +75,8 @@ def upgrade() -> None:
             name=op.f("fk_meeting_user_association_user_id_users"),
             ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint(
-            "id", name=op.f("pk_meeting_user_association")
-        ),
-        sa.UniqueConstraint(
-            "meeting_id", "user_id", name="idx_unique_meeting_user"
-        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_meeting_user_association")),
+        sa.UniqueConstraint("meeting_id", "user_id", name="idx_unique_meeting_user"),
     )
     op.create_index(
         op.f("ix_meeting_user_association_id"),
@@ -117,12 +114,8 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id", name=op.f("pk_tasks")),
     )
     op.create_index(op.f("ix_tasks_id"), "tasks", ["id"], unique=False)
-    op.create_index(
-        op.f("ix_tasks_team_id"), "tasks", ["team_id"], unique=False
-    )
-    op.create_index(
-        op.f("ix_tasks_user_id"), "tasks", ["user_id"], unique=False
-    )
+    op.create_index(op.f("ix_tasks_team_id"), "tasks", ["team_id"], unique=False)
+    op.create_index(op.f("ix_tasks_user_id"), "tasks", ["user_id"], unique=False)
     op.create_table(
         "comments",
         sa.Column("text", sa.String(), nullable=False),
@@ -173,9 +166,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_evaluations")),
     )
-    op.create_index(
-        op.f("ix_evaluations_id"), "evaluations", ["id"], unique=False
-    )
+    op.create_index(op.f("ix_evaluations_id"), "evaluations", ["id"], unique=False)
     op.create_index(
         op.f("ix_evaluations_task_id"), "evaluations", ["task_id"], unique=True
     )

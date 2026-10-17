@@ -3,6 +3,7 @@ name = "business_management_system"
 version = "0.1.0"
 description = ""
 authors = ["anna putilovskaya <putilovskayaam@gmail.com>"]
+package-mode = false
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -15,16 +16,31 @@ pydantic-settings = "^2.9.1"
 fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.1"}
 sqladmin = {extras = ["full"], version = "^0.20.1"}
 alembic-postgresql-enum = "^1.7.0"
+pyjwt = {extras = ["crypto"], version = "^2.10"}
 
 
 [tool.poetry.group.dev.dependencies]
-black = "^25.1.0"
-flake8 = "^7.2.0"
 pytest = "^8.3.5"
 pytest-asyncio = "^1.0.0"
 pytest-cov = "^6.1.1"
 asgi-lifespan = "^2.1.0"
+ruff = "^0.8"
+httpx = "^0.28"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["src/alembic/*"]
+
+[tool.coverage.report]
+show_missing = true

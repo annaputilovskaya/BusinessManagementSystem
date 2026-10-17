@@ -5,15 +5,15 @@ from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user, http_bearer
-from src.models import dbh, User, Task
+from src.models import Task, User, dbh
 from src.schemas.task_schemas import (
-    TaskCreate,
-    TaskRead,
-    TaskModify,
-    TaskUpdate,
     CommentCreate,
+    TaskCreate,
+    TaskModify,
+    TaskRead,
+    TaskUpdate,
 )
-from src.services import task_services, dependencies
+from src.services import dependencies, task_services
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"], dependencies=[Depends(http_bearer)])
 
@@ -59,7 +59,6 @@ async def update_task(
     task_in: TaskUpdate,
     task: Task = Depends(dependencies.get_task_by_id_executor),
     session: AsyncSession = Depends(dbh.session_getter),
-
 ):
     return await task_services.progress_task(task_in, task, session)
 
