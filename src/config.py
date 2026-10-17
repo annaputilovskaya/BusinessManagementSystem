@@ -78,6 +78,7 @@ class AuthJWT(BaseModel):
     algorithm: str = config("ALGORITHM")
     reset_password_token_secret: str = config("RESET_PASSWORD_TOKEN_SECRET")
     verification_token_secret: str = config("VERIFICATION_TOKEN_SECRET")
+    admin_secret_key: str = config("ADMIN_SECRET_KEY")
 
     @field_validator("private_key_path", "public_key_path")
     def check_file_exists(cls, value):
