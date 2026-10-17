@@ -40,7 +40,7 @@ API для управления командой внутри компании: 
 - Изменение / удаление (менеджер)
 - Комментарии в реальном времени (WebSocket) внутри задачи (менеджер и исполнитель)
 
-![Задачи](https://github.com/user-attachments/assets/58aca9af-2dd0-4f90-b114-91df285c3a56)
+![Задачи](https://github.com/user-attachments/assets/2ea7fae9-ba38-4faf-ae62-3c5c5f7830bf)
 
 ### 4. Оценка работы
 
@@ -178,6 +178,7 @@ docker compose up -d --build
 | `ALGORITHM` | Алгоритм JWT (RS256) | — |
 | `RESET_PASSWORD_TOKEN_SECRET` | Секрет токенов сброса пароля | — |
 | `VERIFICATION_TOKEN_SECRET` | Секрет токенов верификации | — |
+| `ADMIN_SECRET_KEY` | Секрет для подписи сессии админки | — |
 
 ## Тесты
 

@@ -40,7 +40,7 @@ calendar.
 - Edit/delete (manager)
 - Real-time comments over WebSocket inside a task (manager and executor)
 
-![Tasks](https://github.com/user-attachments/assets/58aca9af-2dd0-4f90-b114-91df285c3a56)
+![Tasks](https://github.com/user-attachments/assets/2ea7fae9-ba38-4faf-ae62-3c5c5f7830bf)
 
 ### 4. Work evaluation
 
@@ -177,6 +177,7 @@ All variables are read from `.env` (see `.env.example`).
 | `ALGORITHM` | JWT algorithm (RS256) | — |
 | `RESET_PASSWORD_TOKEN_SECRET` | Secret for reset-password tokens | — |
 | `VERIFICATION_TOKEN_SECRET` | Secret for verification tokens | — |
+| `ADMIN_SECRET_KEY` | Secret for signing the admin session | — |
 
 ## Tests
 
