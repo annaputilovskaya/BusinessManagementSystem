@@ -129,7 +129,7 @@ async def comment(
     history = [
         {
             "type": "comment",
-            "user_id": str(comment.user_id),
+            "user_id": str(comment.user_id) if comment.user_id else None,
             "text": comment.text,
             "created_at": comment.created_at.isoformat(),
         }
@@ -160,7 +160,7 @@ async def comment(
                 task_id,
                 {
                     "type": "comment",
-                    "user_id": str(saved.user_id),
+                    "user_id": str(saved.user_id) if saved.user_id else None,
                     "text": saved.text,
                     "created_at": saved.created_at.isoformat(),
                 },
