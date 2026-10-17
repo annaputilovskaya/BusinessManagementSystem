@@ -1,13 +1,16 @@
 from uuid import UUID
 
-from fastapi import Depends
+import jwt as pyjwt
+from fastapi import Depends, WebSocket
 from fastapi.security import HTTPBearer
 from fastapi_users import FastAPIUsers
 from fastapi_users.db import BaseUserDatabase
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.auth_backend import authentication_backend
+from src.auth.auth_backend import authentication_backend, get_jwt_strategy
+from src.config import settings
 from src.models.database import dbh
 from src.models.user import User
 from src.models.user_manager import UserManager
@@ -61,3 +64,43 @@ current_active_verified_superuser = fastapi_users.current_user(
 )
 
 http_bearer = HTTPBearer(auto_error=False)
+
+
+async def authenticate_websocket(
+    websocket: WebSocket, session: AsyncSession
+) -> User | None:
+    """
+    Resolve the current user from ?token=<jwt> query parameter.
+
+    Closes the websocket with code 1008 and returns None on any
+    auth failure (missing, invalid or expired token, inactive or
+    unverified user).
+    """
+    token = websocket.query_params.get("token")
+    user_id: UUID | None = None
+    strategy = get_jwt_strategy()
+    if token:
+        try:
+            payload = pyjwt.decode(
+                token,
+                settings.auth_jwt.public_key_path.read_text(),
+                algorithms=[settings.auth_jwt.algorithm],
+                audience=strategy.token_audience,
+            )
+            user_id = UUID(payload["sub"])
+        except (pyjwt.PyJWTError, KeyError, ValueError, TypeError, AttributeError):
+            user_id = None
+    if user_id is None:
+        await websocket.close(code=1008, reason="Invalid token.")
+        return None
+    user = await session.scalar(
+        select(User).where(
+            User.id == user_id,
+            User.is_active.is_(True),
+            User.is_verified.is_(True),
+        )
+    )
+    if user is None:
+        await websocket.close(code=1008, reason="Invalid token.")
+        return None
+    return user

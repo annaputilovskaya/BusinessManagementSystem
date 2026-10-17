@@ -58,9 +58,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
         """
 
         log.warning(
-            "User %s has forgot their password. Reset token: %s",
+            "User %s has forgot their password.",
             user.id,
-            token,
         )
 
     async def on_after_request_verify(
@@ -78,7 +77,6 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
             request (Request | None): The request object, if available.
         """
         log.warning(
-            "Verification requested for user %s. Verification token: %s",
+            "Verification requested for user %s.",
             user.id,
-            token,
         )

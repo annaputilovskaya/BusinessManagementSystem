@@ -58,6 +58,7 @@ jobs:
           ALGORITHM=RS256
           RESET_PASSWORD_TOKEN_SECRET=ci-reset-secret
           VERIFICATION_TOKEN_SECRET=ci-verify-secret
+          ADMIN_SECRET_KEY=ci-admin-secret
           EOF
 
       - name: Lint

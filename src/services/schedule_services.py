@@ -1,4 +1,3 @@
-from asyncio import gather
 from collections import defaultdict
 from datetime import date
 from typing import Any
@@ -70,7 +69,6 @@ async def get_user_schedule(
             detail={"message": "Incorrect dates interval."},
         )
 
-    meetings_future = get_filtered_user_meetings(start_date, end_date, session, user)
-    tasks_future = get_filtered_user_tasks(start_date, end_date, session, user)
-    meetings, tasks = await gather(meetings_future, tasks_future)
+    meetings = await get_filtered_user_meetings(start_date, end_date, session, user)
+    tasks = await get_filtered_user_tasks(start_date, end_date, session, user)
     return group_by_date(meetings, tasks)

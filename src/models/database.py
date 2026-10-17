@@ -22,7 +22,7 @@ class DatabaseHelper:
         echo_pool: bool = False,
         pool_size: int = 50,
         max_overflow: int = 10,
-        isolation_level: str = "REPEATABLE READ",
+        isolation_level: str = "READ COMMITTED",
     ):
         self.engine: AsyncEngine = create_async_engine(
             url=url,
@@ -54,5 +54,3 @@ dbh = DatabaseHelper(
     pool_size=settings.db.pool_size,
     max_overflow=settings.db.max_overflow,
 )
-
-test_dbh = DatabaseHelper

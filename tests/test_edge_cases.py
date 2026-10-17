@@ -19,6 +19,40 @@ async def test_check_schedule_conflict_empty_participants():
     assert conflicts == []
 
 
+async def test_check_schedule_conflict_midnight_boundaries_do_not_raise():
+    class FakeSession:
+        async def scalars(self, *_args, **_kwargs):
+            return []
+
+    for moment in (time(0, 30), time(23, 30)):
+        conflicts = await check_schedule_conflict(
+            participant_ids=["user-1"],
+            meeting_date=date(2030, 1, 1),
+            meeting_time=moment,
+            session=FakeSession(),
+        )
+        assert conflicts == []
+
+
+async def test_check_schedule_conflict_detects_nearby_meeting():
+    class M:
+        def __init__(self, d, t):
+            self.meet_date = d
+            self.meet_time = t
+
+    class FakeSession:
+        async def scalars(self, *_args, **_kwargs):
+            return [M(date(2030, 1, 1), time(10, 30))]
+
+    conflicts = await check_schedule_conflict(
+        participant_ids=["user-1"],
+        meeting_date=date(2030, 1, 1),
+        meeting_time=time(10, 0),
+        session=FakeSession(),
+    )
+    assert len(conflicts) == 1
+
+
 def test_create_comment_sets_text_and_ids():
     class U:
         id = "user-1"

@@ -85,3 +85,14 @@ async def test_delete_evaluation_by_manager(
     client.post(f"/evaluations/{task.id}", json={"number": 4}, headers=headers)
     resp = client.delete(f"/evaluations/{task.id}", headers=headers)
     assert resp.status_code == 204
+
+
+async def test_update_missing_evaluation_not_found(
+    client, make_team, make_user, make_task, login
+):
+    team = await make_team()
+    manager = await make_user(is_manager=True, team_id=team.id)
+    task = await make_task(team_id=team.id, status="done")
+    headers = login(manager)
+    resp = client.patch(f"/evaluations/{task.id}", json={"number": 3}, headers=headers)
+    assert resp.status_code == 404, resp.text

@@ -38,7 +38,10 @@ async def get_teams(
 
 
 @router.get("/{team_id}", summary="Show team.", response_model=TeamRead)
-async def get_team(team: Team = Depends(get_team_by_id)):
+async def get_team(
+    team: Team = Depends(get_team_by_id),
+    user: User = Depends(current_active_verified_user),
+):
     return team
 
 

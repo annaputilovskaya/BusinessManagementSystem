@@ -1,6 +1,5 @@
 __all__ = (
     "dbh",
-    "test_dbh",
     "Base",
     "User",
     "Team",
@@ -12,7 +11,7 @@ __all__ = (
 )
 
 from src.models.base import Base
-from src.models.database import dbh, test_dbh
+from src.models.database import dbh
 from src.models.evaluation import Evaluation
 from src.models.meeting import Meeting, MeetingUserAssociation
 from src.models.task import Comment, Task
