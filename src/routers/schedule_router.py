@@ -3,8 +3,8 @@ from datetime import date
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.dependencies import http_bearer, current_active_verified_user
-from src.models import dbh, User
+from src.auth.dependencies import current_active_verified_user, http_bearer
+from src.models import User, dbh
 from src.services.schedule_services import get_user_schedule
 from src.services.utils import get_first_and_last_day_of_month
 

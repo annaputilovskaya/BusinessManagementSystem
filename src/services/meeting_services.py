@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User, Meeting, MeetingUserAssociation
+from src.models import Meeting, MeetingUserAssociation, User
 from src.schemas.meeting_schemas import MeetingCreateSchema
 
 
@@ -39,7 +39,7 @@ async def check_schedule_conflict(
         .where(
             MeetingUserAssociation.user_id.in_(participant_ids),
             Meeting.meet_date == meeting_date,
-            Meeting.is_canceled == False,
+            Meeting.is_canceled.is_(False),
             Meeting.meet_time.between(time_minus_hour, time_plus_hour),
         )
     )
@@ -138,7 +138,7 @@ async def get_filtered_user_meetings(
             .join(MeetingUserAssociation)
             .where(
                 MeetingUserAssociation.user_id == user.id,
-                Meeting.is_canceled == False,
+                Meeting.is_canceled.is_(False),
                 Meeting.meet_date.between(start_date, end_date),
             )
             .order_by(Meeting.meet_date, Meeting.meet_time)

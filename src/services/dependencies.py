@@ -1,12 +1,12 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import HTTPException, Path, Depends, status
-from sqlalchemy import select, and_
+from fastapi import Depends, HTTPException, Path, status
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import current_active_verified_user
-from src.models import User, dbh, Task, Team
+from src.models import Task, Team, User, dbh
 from src.models.meeting import Meeting
 
 
@@ -154,13 +154,15 @@ async def get_meeting_by_id(
     """
 
     meeting_db = await session.scalar(
-        select(Meeting).where(
+        select(Meeting)
+        .where(
             and_(
                 Meeting.id == meeting_id,
                 Meeting.is_canceled.is_(False),
-                User.id == user.id
+                User.id == user.id,
             )
-        ).join(Meeting.participants)
+        )
+        .join(Meeting.participants)
     )
     if not meeting_db:
         raise HTTPException(

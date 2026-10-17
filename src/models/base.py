@@ -1,9 +1,8 @@
 from uuid import UUID, uuid4
 
-from sqlalchemy import MetaData, UUID as UUID_SQL
-
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, declared_attr
-
+from sqlalchemy import UUID as UUID_SQL
+from sqlalchemy import MetaData
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 naming_convention: dict[str, str] = {
     "ix": "ix_%(column_0_label)s",

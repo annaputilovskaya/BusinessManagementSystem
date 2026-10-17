@@ -5,8 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User, Task, Comment
-from src.schemas.task_schemas import TaskCreate, TaskModify, TaskUpdate, CommentCreate
+from src.models import Comment, Task, User
+from src.schemas.task_schemas import CommentCreate, TaskCreate, TaskModify, TaskUpdate
 
 
 async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Task:
@@ -199,11 +199,7 @@ async def change_task(
     return task
 
 
-async def progress_task(
-    task_in: TaskUpdate,
-    task: Task,
-    session: AsyncSession
-) -> Task:
+async def progress_task(task_in: TaskUpdate, task: Task, session: AsyncSession) -> Task:
     """
     Updates the progress of a given task.
 

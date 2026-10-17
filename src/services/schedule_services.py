@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User, Meeting, Task
+from src.models import Meeting, Task, User
 from src.services.meeting_services import get_filtered_user_meetings
 from src.services.task_services import get_filtered_user_tasks
 
