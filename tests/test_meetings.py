@@ -3,9 +3,7 @@ from datetime import date, timedelta
 FUTURE_DATE = date.today() + timedelta(days=7)
 
 
-async def test_create_meeting_with_two_teammates(
-    client, make_team, make_user, login
-):
+async def test_create_meeting_with_two_teammates(client, make_team, make_user, login):
     team = await make_team()
     creator = await make_user(team_id=team.id)
     mate = await make_user(team_id=team.id)
@@ -24,9 +22,7 @@ async def test_create_meeting_with_two_teammates(
     assert len(body["participants"]) == 2
 
 
-async def test_meeting_conflict_within_one_hour(
-    client, make_team, make_user, login
-):
+async def test_meeting_conflict_within_one_hour(client, make_team, make_user, login):
     team = await make_team()
     creator = await make_user(team_id=team.id)
     mate = await make_user(team_id=team.id)
@@ -46,9 +42,7 @@ async def test_meeting_conflict_within_one_hour(
     assert resp.status_code == 409, resp.text
 
 
-async def test_meeting_without_teammates_fails(
-    client, make_team, make_user, login
-):
+async def test_meeting_without_teammates_fails(client, make_team, make_user, login):
     team = await make_team()
     creator = await make_user(team_id=team.id)
     headers = login(creator)
@@ -64,9 +58,7 @@ async def test_meeting_without_teammates_fails(
     assert resp.status_code == 404, resp.text
 
 
-async def test_cancel_meeting(
-    client, make_team, make_user, login
-):
+async def test_cancel_meeting(client, make_team, make_user, login):
     team = await make_team()
     creator = await make_user(team_id=team.id)
     mate = await make_user(team_id=team.id)

@@ -14,9 +14,7 @@ async def test_executor_cannot_create_task(client, make_team, make_user, login):
     assert resp.status_code == 403, resp.text
 
 
-async def test_manager_without_team_cannot_create_task(
-    client, make_user, login
-):
+async def test_manager_without_team_cannot_create_task(client, make_user, login):
     manager = await make_user(is_manager=True, team_id=None)
     headers = login(manager)
     resp = client.post(

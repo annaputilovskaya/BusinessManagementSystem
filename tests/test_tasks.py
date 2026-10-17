@@ -1,6 +1,4 @@
-async def test_manager_creates_task_with_executor(
-    client, make_team, make_user, login
-):
+async def test_manager_creates_task_with_executor(client, make_team, make_user, login):
     team = await make_team()
     manager = await make_user(is_manager=True, team_id=team.id)
     executor = await make_user(team_id=team.id)
@@ -71,9 +69,7 @@ async def test_executor_sees_only_own_tasks(
     assert all(t["id"] == str(own.id) for t in resp.json())
 
 
-async def test_manager_modifies_task(
-    client, make_team, make_user, make_task, login
-):
+async def test_manager_modifies_task(client, make_team, make_user, make_task, login):
     team = await make_team()
     manager = await make_user(is_manager=True, team_id=team.id)
     task = await make_task(team_id=team.id)
@@ -106,9 +102,7 @@ async def test_task_status_flow_opened_progress_done(
     assert resp.json()["status"] == "done"
 
 
-async def test_delete_task_by_manager(
-    client, make_team, make_user, make_task, login
-):
+async def test_delete_task_by_manager(client, make_team, make_user, make_task, login):
     team = await make_team()
     manager = await make_user(is_manager=True, team_id=team.id)
     task = await make_task(team_id=team.id)
