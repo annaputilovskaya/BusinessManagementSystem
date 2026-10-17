@@ -3,61 +3,16 @@
 # Система управления бизнесом
 
 [![CI](https://github.com/annaputilovskaya/BusinessManagementSystem/actions/workflows/ci.yml/badge.svg)](https://github.com/annaputilovskaya/BusinessManagementSystem/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/gh/annaputilovskaya/BusinessManagementSystem/graph/badge.svg)](https://codecov.io/gh/annaputilovskaya/BusinessManagementSystem)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/annaputilovskaya/9e13be2e22bb6c48cd869d453e37e8fa/raw/coverage.json)](https://github.com/annaputilovskaya/BusinessManagementSystem/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-orange.svg)](https://fastapi.tiangolo.com/)
 
-**Задача:** разработать одностраничное MVP-приложение без микросервисов для
-управления командой внутри компании: пользователи с ролями, команды, задачи с
-комментариями, встречи, оценки и календарь.
-
-**Репозиторий:** [annaputilovskaya/BusinessManagementSystem](https://github.com/annaputilovskaya/BusinessManagementSystem)
+Приложение для управления командой внутри компании: пользователи с ролями,
+команды, задачи с комментариями в реальном времени (WebSocket), встречи, оценка
+работы и календарь.
 
 ## Возможности
-
-- **Пользователи** (роли администратор, менеджер и обычный пользователь):
-  самостоятельная регистрация с email и паролем, авторизация/выход, обновление
-  профиля, удаление аккаунта.
-- **Команды**: создание команды (администратор), добавление/удаление
-  пользователей, назначение ролей внутри команды (администратор), просмотр
-  состава команды (все пользователи).
-- **Задачи**: создание задач руководителем (менеджер), назначение исполнителя
-  (менеджер), изменение статуса (исполнитель), изменение/удаление (менеджер),
-  комментарии — упрощённый чат внутри задачи (менеджер и исполнитель).
-- **Оценка работы**: руководитель оценивает выполненные задачи баллами от 1 до 5;
-  пользователь видит свои оценки и вывод средней оценки за период.
-- **Встречи**: назначение встречи (дата, время, участники), проверка пересечений,
-  список встреч пользователя, отмена встречи.
-- **Календарь**: отображение задач и встреч за день и за месяц.
-
-## Стек
-
-- **Язык / фреймворк:** Python 3.11, FastAPI
-- **ORM / миграции:** SQLAlchemy 2 (async) + Alembic
-- **Хранение данных:** PostgreSQL 16
-- **Auth / admin:** fastapi-users (JWT, RS256), sqladmin
-- **Запуск / инструменты:** Docker, docker compose, Poetry
-- **Качество:** pytest, pytest-cov, ruff (см. [Тесты](#тесты))
-
-## Архитектура
-
-```mermaid
-flowchart LR
-    Client["Клиент (REST)"] --> Routers["FastAPI routers"]
-    Routers --> Services["services (бизнес-логика)"]
-    Services --> ORM["SQLAlchemy 2 (async)"]
-    ORM --> DB[("PostgreSQL 16")]
-    Admin["sqladmin (админ-UI)"] --> ORM
-    Alembic["Alembic (миграции)"] --> DB
-    Auth["fastapi-users (JWT, RS256)"] --> Routers
-```
-
-## Модель данных
-
-![Схема базы данных](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
-
-## Бизнес-логика
 
 ### 1. Пользователи (роли: администратор, менеджер, обычный пользователь)
 
@@ -93,7 +48,7 @@ flowchart LR
 - Пользователь видит свои оценки
 - Вывод средней оценки за период
 
-![Оценки](https://github.com/user-attachments/assets/bf112e0b-986c-4d4e-815e-704ebafb06d0)
+![Оценки](https://github.com/user-attachments/assets/79f86bbe-9c87-4a7b-b276-9e8ed90c9f50)
 
 ### 5. Встречи
 
@@ -110,6 +65,32 @@ flowchart LR
 - Отображение задач и встреч за месяц
 
 ![Календарь](https://github.com/user-attachments/assets/2a36470e-f328-47fa-8044-88193879d452)
+
+## Стек
+
+- **Язык / фреймворк:** Python 3.11, FastAPI
+- **ORM / миграции:** SQLAlchemy 2 (async) + Alembic
+- **Хранение данных:** PostgreSQL 16
+- **Auth / admin:** fastapi-users (JWT, RS256), sqladmin
+- **Запуск / инструменты:** Docker, docker compose, Poetry
+- **Качество:** pytest, pytest-cov, ruff (см. [Тесты](#тесты))
+
+## Архитектура
+
+```mermaid
+flowchart LR
+    Client["Клиент (REST)"] --> Routers["FastAPI routers"]
+    Routers --> Services["services (бизнес-логика)"]
+    Services --> ORM["SQLAlchemy 2 (async)"]
+    ORM --> DB[("PostgreSQL 16")]
+    Admin["sqladmin (админ-UI)"] --> ORM
+    Alembic["Alembic (миграции)"] --> DB
+    Auth["fastapi-users (JWT, RS256)"] --> Routers
+```
+
+## Модель данных
+
+![Схема базы данных](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
 
 ## Запуск
 
@@ -173,28 +154,6 @@ docker compose up -d --build
 | `RESET_PASSWORD_TOKEN_SECRET` | Секрет токенов сброса пароля | — |
 | `VERIFICATION_TOKEN_SECRET` | Секрет токенов верификации | — |
 
-## API
-
-Интерактивная документация (Swagger UI) доступна на `/docs`.
-
-| Метод | Эндпоинт | Описание |
-|---|---|---|
-| `POST` | `/users/register` | Регистрация пользователя |
-| `POST` | `/users/login` | Получение JWT-токена |
-| `GET` | `/users/me` | Профиль текущего пользователя |
-| `POST` | `/teams/` | Создание команды (администратор) |
-| `PATCH` | `/teams/{team_id}` | Добавление/удаление участников (администратор) |
-| `GET` | `/teams/` | Список команд |
-| `POST` | `/tasks/` | Создание задачи (менеджер) |
-| `GET` | `/tasks/` | Список задач |
-| `PATCH` | `/tasks/{task_id}/status` | Изменение статуса задачи (исполнитель) |
-| `POST` | `/meetings/` | Назначение встречи |
-| `PATCH` | `/meetings/{meeting_id}` | Отмена встречи |
-| `POST` | `/evaluations/{task_id}` | Оценка выполненной задачи (менеджер) |
-| `GET` | `/evaluations/average/{executor_id}` | Средняя оценка пользователя |
-| `GET` | `/schedule/day` | Задачи и встречи за день |
-| `GET` | `/schedule/month` | Задачи и встречи за месяц |
-
 ## Тесты
 
 ```bash
@@ -220,12 +179,6 @@ src/
   services/   # бизнес-логика
 tests/        # набор pytest (интеграционные тесты на изолированной БД)
 ```
-
-## Roadmap / Статус
-
-- [x] Пользователи, авторизация, команды, задачи с комментариями, встречи, оценки, календарь
-- [x] Интеграционные тесты ядра и порог покрытия в CI
-- [ ] Комментарии в реальном времени по WebSocket (JSON-протокол, broadcast по комнатам)
 
 ## Лицензия
 

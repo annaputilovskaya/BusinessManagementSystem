@@ -3,61 +3,18 @@
 # Business Management System
 
 [![CI](https://github.com/annaputilovskaya/BusinessManagementSystem/actions/workflows/ci.yml/badge.svg)](https://github.com/annaputilovskaya/BusinessManagementSystem/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/gh/annaputilovskaya/BusinessManagementSystem/graph/badge.svg)](https://codecov.io/gh/annaputilovskaya/BusinessManagementSystem)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/annaputilovskaya/9e13be2e22bb6c48cd869d453e37e8fa/raw/coverage.json)](https://github.com/annaputilovskaya/BusinessManagementSystem/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-orange.svg)](https://fastapi.tiangolo.com/)
 
-A single-page MVP application (no microservices) for managing a team inside a
-company: users with roles, teams, tasks with comments, meetings, evaluations
-and a calendar.
-
-**Repo:** [annaputilovskaya/BusinessManagementSystem](https://github.com/annaputilovskaya/BusinessManagementSystem)
+A team management application for a company: role-based users, teams, tasks with
+real-time comments over WebSocket, meetings, performance evaluations and a
+calendar.
 
 ## Features
 
-- **Users** (admin / manager / employee roles): self-registration, login/logout,
-  profile update, account deletion.
-- **Teams**: create a team (admin), add/remove members (admin), assign roles
-  inside a team (admin), view team composition (all users).
-- **Tasks**: create and assign tasks (manager), change status (executor),
-  edit/delete (manager), comments as a simplified chat inside a task
-  (manager and executor).
-- **Evaluations**: manager scores completed tasks from 1 to 5; a user sees
-  personal scores and an average score for a period.
-- **Meetings**: schedule a meeting (date, time, participants), overlap check,
-  list of the user's meetings, cancel a meeting.
-- **Calendar**: tasks and meetings by day and by month.
-
-## Stack
-
-- **Language / framework:** Python 3.11, FastAPI
-- **ORM / migrations:** SQLAlchemy 2 (async) + Alembic
-- **Database:** PostgreSQL 16
-- **Auth / admin:** fastapi-users (JWT, RS256), sqladmin
-- **Runtime / tooling:** Docker, docker compose, Poetry
-- **Quality:** pytest, pytest-cov, ruff (see [Tests](#tests))
-
-## Architecture
-
-```mermaid
-flowchart LR
-    Client["Client (REST)"] --> Routers["FastAPI routers"]
-    Routers --> Services["services (business logic)"]
-    Services --> ORM["SQLAlchemy 2 (async)"]
-    ORM --> DB[("PostgreSQL 16")]
-    Admin["sqladmin (admin UI)"] --> ORM
-    Alembic["Alembic migrations"] --> DB
-    Auth["fastapi-users (JWT, RS256)"] --> Routers
-```
-
-## Data model
-
-![Database schema](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
-
-## Business logic
-
-### 1. Users (roles: administrator, manager, regular user)
+### 1. Users (administrator, manager and regular user roles)
 
 - Self-registration with email and password
 - Authorization / logout
@@ -91,7 +48,7 @@ flowchart LR
 - A user sees their scores
 - Average score over a period
 
-![Evaluations](https://github.com/user-attachments/assets/bf112e0b-986c-4d4e-815e-704ebafb06d0)
+![Evaluations](https://github.com/user-attachments/assets/79f86bbe-9c87-4a7b-b276-9e8ed90c9f50)
 
 ### 5. Meetings
 
@@ -108,6 +65,32 @@ flowchart LR
 - Display tasks and meetings for a month
 
 ![Calendar](https://github.com/user-attachments/assets/2a36470e-f328-47fa-8044-88193879d452)
+
+## Stack
+
+- **Language / framework:** Python 3.11, FastAPI
+- **ORM / migrations:** SQLAlchemy 2 (async) + Alembic
+- **Database:** PostgreSQL 16
+- **Auth / admin:** fastapi-users (JWT, RS256), sqladmin
+- **Runtime / tooling:** Docker, docker compose, Poetry
+- **Quality:** pytest, pytest-cov, ruff (see [Tests](#tests))
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Client["Client (REST)"] --> Routers["FastAPI routers"]
+    Routers --> Services["services (business logic)"]
+    Services --> ORM["SQLAlchemy 2 (async)"]
+    ORM --> DB[("PostgreSQL 16")]
+    Admin["sqladmin (admin UI)"] --> ORM
+    Alembic["Alembic migrations"] --> DB
+    Auth["fastapi-users (JWT, RS256)"] --> Routers
+```
+
+## Data model
+
+![Database schema](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
 
 ## Getting started
 
@@ -171,28 +154,6 @@ All variables are read from `.env` (see `.env.example`).
 | `RESET_PASSWORD_TOKEN_SECRET` | Secret for reset-password tokens | — |
 | `VERIFICATION_TOKEN_SECRET` | Secret for verification tokens | — |
 
-## API
-
-Interactive documentation (Swagger UI) is available at `/docs`.
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/users/register` | Register a new user |
-| `POST` | `/users/login` | Obtain a JWT access token |
-| `GET` | `/users/me` | Current user profile |
-| `POST` | `/teams/` | Create a team (admin) |
-| `PATCH` | `/teams/{team_id}` | Add/remove team members (admin) |
-| `GET` | `/teams/` | List teams |
-| `POST` | `/tasks/` | Create a task (manager) |
-| `GET` | `/tasks/` | List tasks |
-| `PATCH` | `/tasks/{task_id}/status` | Change task status (executor) |
-| `POST` | `/meetings/` | Schedule a meeting |
-| `PATCH` | `/meetings/{meeting_id}` | Cancel a meeting |
-| `POST` | `/evaluations/{task_id}` | Score a completed task (manager) |
-| `GET` | `/evaluations/average/{executor_id}` | Average score for a user |
-| `GET` | `/schedule/day` | Tasks and meetings for a day |
-| `GET` | `/schedule/month` | Tasks and meetings for a month |
-
 ## Tests
 
 ```bash
@@ -218,12 +179,6 @@ src/
   services/   # business logic
 tests/        # pytest suite (integration tests on an isolated test DB)
 ```
-
-## Roadmap / Status
-
-- [x] Users, auth, teams, tasks with comments, meetings, evaluations, calendar
-- [x] Core integration tests and coverage gate in CI
-- [ ] Real-time comments over WebSocket (JSON protocol, room-scoped broadcast)
 
 ## License
 
