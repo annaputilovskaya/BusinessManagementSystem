@@ -112,3 +112,43 @@ async def test_delete_task_by_manager(client, make_team, make_user, make_task, l
 
     resp = client.get(f"/tasks/{task.id}", headers=headers)
     assert resp.status_code == 404
+
+
+async def test_task_status_cannot_skip_step(
+    client, make_team, make_user, make_task, login
+):
+    team = await make_team()
+    executor = await make_user(team_id=team.id)
+    task = await make_task(team_id=team.id, user_id=executor.id)
+    headers = login(executor)
+    resp = client.patch(
+        f"/tasks/{task.id}/status", json={"status": "done"}, headers=headers
+    )
+    assert resp.status_code == 400, resp.text
+
+
+async def test_task_status_cannot_move_backward(
+    client, make_team, make_user, make_task, login
+):
+    team = await make_team()
+    executor = await make_user(team_id=team.id)
+    task = await make_task(team_id=team.id, user_id=executor.id, status="done")
+    headers = login(executor)
+    resp = client.patch(
+        f"/tasks/{task.id}/status", json={"status": "progress"}, headers=headers
+    )
+    assert resp.status_code == 400, resp.text
+
+
+async def test_task_status_same_value_allowed(
+    client, make_team, make_user, make_task, login
+):
+    team = await make_team()
+    executor = await make_user(team_id=team.id)
+    task = await make_task(team_id=team.id, user_id=executor.id)
+    headers = login(executor)
+    resp = client.patch(
+        f"/tasks/{task.id}/status", json={"status": "opened"}, headers=headers
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "opened"

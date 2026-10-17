@@ -6,7 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import Comment, Task, User
+from src.models.enums import StatusEnum
 from src.schemas.task_schemas import CommentCreate, TaskCreate, TaskModify, TaskUpdate
+
+STATUS_SEQUENCE: tuple[StatusEnum, ...] = (
+    StatusEnum.OPENED,
+    StatusEnum.PROGRESS,
+    StatusEnum.DONE,
+)
 
 
 async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Task:
@@ -215,8 +222,20 @@ async def progress_task(task_in: TaskUpdate, task: Task, session: AsyncSession) 
 
     Returns:
         Task: The updated task instance after applying the progress update.
+
+    Raises:
+        HTTPException:
+        - 400 Bad Request: If the status transition is not allowed (only forward
+            transitions to the next status are permitted).
     """
 
+    current_index = STATUS_SEQUENCE.index(task.status)
+    target_index = STATUS_SEQUENCE.index(task_in.status)
+    if target_index not in (current_index, current_index + 1):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Invalid status transition."},
+        )
     task.status = task_in.status
     session.add(task)
     await session.commit()
