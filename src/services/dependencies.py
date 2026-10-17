@@ -70,9 +70,7 @@ async def get_task_by_id_executor(
 
 
 async def get_team_task_by_id(
-    task_id: UUID,
-    session: AsyncSession,
-    user: User
+    task_id: UUID, session: AsyncSession, user: User
 ) -> Task | None:
     """
     Retrieve a task from the database by ID if user is in executor team.
