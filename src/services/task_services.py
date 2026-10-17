@@ -35,6 +35,12 @@ async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Ta
     """
 
     if user.is_manager and user.team_id:
+        new_task = Task(
+            name=task_in.name,
+            description=task_in.description,
+            deadline=task_in.deadline,
+            team_id=user.team_id,
+        )
         if task_in.user_id:
             executor = await session.scalar(
                 select(User).where(
@@ -42,27 +48,7 @@ async def add_task(task_in: TaskCreate, session: AsyncSession, user: User) -> Ta
                 )
             )
             if executor:
-                new_task = Task(
-                    name=task_in.name,
-                    description=task_in.description,
-                    deadline=task_in.deadline,
-                    team_id=user.team_id,
-                    user_id=executor.id,
-                )
-            else:
-                new_task = Task(
-                    name=task_in.name,
-                    description=task_in.description,
-                    deadline=task_in.deadline,
-                    team_id=user.team_id,
-                )
-        else:
-            new_task = Task(
-                name=task_in.name,
-                description=task_in.description,
-                deadline=task_in.deadline,
-                team_id=user.team_id,
-            )
+                new_task.user_id = executor.id
         session.add(new_task)
         await session.commit()
         await session.refresh(new_task)
