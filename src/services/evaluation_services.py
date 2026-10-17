@@ -149,11 +149,20 @@ async def change_evaluation(
 
     Returns:
         Evaluation: The updated evaluation object after changes have been applied.
+
+    Raises:
+        HTTPException:
+            - 404 Not Found: If no evaluation exists for the task.
     """
 
     evaluation_db = await session.scalar(
         select(Evaluation).where(Evaluation.task_id == task.id)
     )
+    if not evaluation_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "No evaluations found."},
+        )
     evaluation_db.number = evaluation_in.number
     session.add(evaluation_db)
     await session.commit()
