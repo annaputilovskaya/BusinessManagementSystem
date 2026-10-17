@@ -5,7 +5,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from src.auth.auth_backend import authentication_backend
-from src.auth.dependencies import get_user_manager, get_user_db
+from src.auth.dependencies import get_user_db, get_user_manager
 from src.models import dbh
 
 get_users_db_context = contextlib.asynccontextmanager(get_user_db)

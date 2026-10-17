@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from src.schemas.user_schemas import UserRead, UserUpdate
+from src.schemas.user_schemas import UserRead
 
 
 class TeamRead(BaseModel):

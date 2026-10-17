@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from starlette.config import Config
 
@@ -56,13 +56,11 @@ class LoggingConfig(BaseModel):
         "error",
         "critical",
     ] = "info"
-    log_format: str = (
-        "[%(asctime)s.%(msecs)03d] %(levelname)-8s %(funcName)20s %(module)s:%(lineno)d - %(message)s"
-    )
+    log_format: str = "[%(asctime)s.%(msecs)03d] %(levelname)-8s %(funcName)20s %(module)s:%(lineno)d - %(message)s"
 
     @property
     def log_level_value(self) -> int:
-        return  getattr(logging, self.log_level.upper())
+        return getattr(logging, self.log_level.upper())
 
 
 class AuthJWT(BaseModel):
@@ -71,8 +69,12 @@ class AuthJWT(BaseModel):
     """
 
     lifetime_seconds: int = 3600
-    private_key_path: Path = Field(default=BASE_DIR / "src" / "auth" / "certs" /"jwt-private.pem")
-    public_key_path: Path = Field(default=BASE_DIR / "src" / "auth" / "certs" / "jwt-public.pem")
+    private_key_path: Path = Field(
+        default=BASE_DIR / "src" / "auth" / "certs" / "jwt-private.pem"
+    )
+    public_key_path: Path = Field(
+        default=BASE_DIR / "src" / "auth" / "certs" / "jwt-public.pem"
+    )
     algorithm: str = config("ALGORITHM")
     reset_password_token_secret: str = config("RESET_PASSWORD_TOKEN_SECRET")
     verification_token_secret: str = config("VERIFICATION_TOKEN_SECRET")

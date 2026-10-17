@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bms
+          POSTGRES_PASSWORD: bms
+          POSTGRES_DB: bms
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Generate JWT certificates
+        run: |
+          mkdir -p src/auth/certs
+          openssl genrsa -out src/auth/certs/jwt-private.pem 2048
+          openssl rsa -in src/auth/certs/jwt-private.pem -pubout -out src/auth/certs/jwt-public.pem
+
+      - name: Create .env
+        run: |
+          cat > .env <<EOF
+          POSTGRES_ENGINE=postgresql+asyncpg
+          POSTGRES_USER=bms
+          POSTGRES_PASSWORD=bms
+          POSTGRES_HOST=localhost
+          POSTGRES_PORT=5432
+          POSTGRES_DB=bms
+          POSTGRES_ECHO=0
+          ALGORITHM=RS256
+          RESET_PASSWORD_TOKEN_SECRET=ci-reset-secret
+          VERIFICATION_TOKEN_SECRET=ci-verify-secret
+          EOF
+
+      - name: Lint
+        run: poetry run ruff check .
+
+      - name: Format check
+        run: poetry run ruff format --check .
+
+      - name: Apply migrations to main database
+        run: poetry run alembic upgrade head
+
+      - name: Test with coverage
+        run: poetry run pytest --cov=src --cov-report=term-missing --cov-fail-under=55
+
+      - name: Coverage badge data
+        id: coverage
+        run: |
+          poetry run coverage json -o coverage.json
+          poetry run python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+
+          totals = json.load(open("coverage.json"))["totals"]
+          percent = totals["percent_covered"]
+          color = "green" if percent >= 80 else "yellow" if percent >= 55 else "red"
+          print(f"total={totals['percent_covered_display']}%")
+          print(f"color={color}")
+          PY
+
+      - name: Update coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 9e13be2e22bb6c48cd869d453e37e8fa
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.total }}
+          color: ${{ steps.coverage.outputs.color }}

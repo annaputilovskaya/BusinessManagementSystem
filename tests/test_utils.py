@@ -1,5 +1,5 @@
-from datetime import date
 from contextlib import nullcontext as does_not_raise
+from datetime import date
 
 import pytest
 from fastapi import HTTPException

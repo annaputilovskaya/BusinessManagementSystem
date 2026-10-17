@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User, Team
+from src.models import Team, User
 
 
 async def add_team(session: AsyncSession) -> Team:
