@@ -38,7 +38,7 @@ API для управления командой внутри компании: 
 - Назначение исполнителя (менеджер)
 - Изменение статуса (исполнитель)
 - Изменение / удаление (менеджер)
-- Комментарии — упрощённый чат внутри задачи (менеджер и исполнитель)
+- Комментарии в реальном времени (WebSocket) внутри задачи (менеджер и исполнитель)
 
 ![Задачи](https://github.com/user-attachments/assets/58aca9af-2dd0-4f90-b114-91df285c3a56)
 
@@ -91,6 +91,31 @@ flowchart LR
 ## Модель данных
 
 ![Схема базы данных](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
+
+## Комментарии в реальном времени
+
+Комментарии к задачам передаются по WebSocket: `ws /tasks/{task_id}/comments/?token=<jwt>`.
+
+- При подключении сервер отправляет историю комментариев как JSON-массив:
+  `[{"type": "comment", "user_id": "...", "text": "...", "created_at": "..."}]`
+- Клиенты отправляют `{"text": "..."}`; сервер сохраняет комментарий и рассылает
+  `{"type": "comment", ...}` всем участникам, подключённым к комнате этой задачи.
+- Некорректные кадры получают `{"type": "error", ...}` без разрыва соединения.
+- Отсутствующий/недействительный токен или задача вне вашей команды закрывают
+  соединение с кодом 1008.
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as FastAPI
+    participant DB as PostgreSQL
+    C->>S: WS connect ?token=JWT
+    S->>DB: verify task access
+    S-->>C: history (JSON array)
+    C->>S: {"text": "..."}
+    S->>DB: add_comment
+    S-->>C: broadcast {"type": "comment", ...} (task room)
+```
 
 ## Запуск
 

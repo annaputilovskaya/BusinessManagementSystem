@@ -38,7 +38,7 @@ calendar.
 - Assign an executor (manager)
 - Change status (executor)
 - Edit/delete (manager)
-- Comments — a simplified chat inside a task (manager and executor)
+- Real-time comments over WebSocket inside a task (manager and executor)
 
 ![Tasks](https://github.com/user-attachments/assets/58aca9af-2dd0-4f90-b114-91df285c3a56)
 
@@ -91,6 +91,30 @@ flowchart LR
 ## Data model
 
 ![Database schema](https://github.com/user-attachments/assets/8a665980-8868-4fd5-809a-ec4dd1724f64)
+
+## Real-time comments
+
+Task comments are streamed over WebSocket: `ws /tasks/{task_id}/comments/?token=<jwt>`.
+
+- On connect the server sends the comment history as a JSON array:
+  `[{"type": "comment", "user_id": "...", "text": "...", "created_at": "..."}]`
+- Clients send `{"text": "..."}`; the server saves the comment and broadcasts
+  `{"type": "comment", ...}` to every member connected to that task room.
+- Invalid frames get `{"type": "error", ...}` without dropping the connection.
+- Missing/invalid token or a task outside your team closes the socket with code 1008.
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as FastAPI
+    participant DB as PostgreSQL
+    C->>S: WS connect ?token=JWT
+    S->>DB: verify task access
+    S-->>C: history (JSON array)
+    C->>S: {"text": "..."}
+    S->>DB: add_comment
+    S-->>C: broadcast {"type": "comment", ...} (task room)
+```
 
 ## Getting started
 
