@@ -1,7 +1,7 @@
 from fastapi_users.authentication import (
     AuthenticationBackend,
-    JWTStrategy,
     BearerTransport,
+    JWTStrategy,
 )
 
 from src.config import settings

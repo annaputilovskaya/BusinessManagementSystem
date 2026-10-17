@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import User, Team
+from src.models import Team, User
 
 
 async def add_team(session: AsyncSession) -> Team:
@@ -64,16 +64,16 @@ async def add_team_id_to_team_members(
     """
 
     users_update = await session.scalars(select(User).where(User.id.in_(user_ids)))
-    if users_update is None:
+    found_ids = {user.id for user in users_update}
+    if user_ids and len(found_ids) != len(set(user_ids)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail={"message": "No users found."}
         )
-    else:
-        await session.execute(
-            update(User).where(User.id.in_(user_ids)).values(team_id=team.id)
-        )
-        await session.commit()
-        return {"detail": "Team updated."}
+    await session.execute(
+        update(User).where(User.id.in_(user_ids)).values(team_id=team.id)
+    )
+    await session.commit()
+    return {"detail": "Team updated."}
 
 
 async def remove_team(

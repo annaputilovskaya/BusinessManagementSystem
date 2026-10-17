@@ -1,13 +1,18 @@
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, DateTime, text as sqla_text
+from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy import text as sqla_text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models import Base
 from src.models.enums import StatusEnum
-from src.models.evaluation import Evaluation
+
+if TYPE_CHECKING:
+    from src.models.evaluation import Evaluation
+    from src.models.user import User
 
 
 class Comment(Base):
@@ -67,8 +72,13 @@ class Task(Base):
     description: Mapped[str]
     deadline: Mapped[date]
     status: Mapped[StatusEnum] = mapped_column(
-        ENUM(StatusEnum, name="status", create_type=False, values_callable=lambda e: [field.value for field in e],
-), default=StatusEnum.OPENED
+        ENUM(
+            StatusEnum,
+            name="status",
+            create_type=False,
+            values_callable=lambda e: [field.value for field in e],
+        ),
+        default=StatusEnum.OPENED,
     )
     team_id: Mapped[UUID] = mapped_column(
         ForeignKey("teams.id", ondelete="CASCADE"), index=True
@@ -80,9 +90,7 @@ class Task(Base):
     comments: Mapped[list["Comment"]] = relationship(
         "Comment", back_populates="task", lazy="selectin"
     )
-    user: Mapped["User"] = relationship(
-        "User", back_populates="tasks", lazy="selectin"
-    )
+    user: Mapped["User"] = relationship("User", back_populates="tasks", lazy="selectin")
     evaluation: Mapped["Evaluation"] = relationship(
         "Evaluation", back_populates="task", lazy="selectin"
     )

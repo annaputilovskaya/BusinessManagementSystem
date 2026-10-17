@@ -1,11 +1,19 @@
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase, SQLAlchemyBaseUserTableUUID, UUID_ID
+from fastapi_users_db_sqlalchemy import (
+    SQLAlchemyBaseUserTableUUID,
+    SQLAlchemyUserDatabase,
+)
 from sqlalchemy import Boolean, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped, relationship, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models import Base, Team
+
+if TYPE_CHECKING:
+    from src.models.meeting import Meeting
+    from src.models.task import Task
 
 
 class User(Base, SQLAlchemyBaseUserTableUUID):

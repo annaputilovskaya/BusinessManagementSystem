@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class StatusEnum(Enum):
     """Task status enum."""
 

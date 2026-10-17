@@ -8,13 +8,13 @@ from src.auth.dependencies import (
     current_active_verified_user,
     http_bearer,
 )
-from src.models import dbh, User, Team
+from src.models import Team, User, dbh
 from src.schemas.team_schemas import TeamRead
 from src.services.dependencies import get_team_by_id
 from src.services.team_services import (
     add_team,
-    get_all_teams,
     add_team_id_to_team_members,
+    get_all_teams,
     remove_team,
 )
 
@@ -38,7 +38,10 @@ async def get_teams(
 
 
 @router.get("/{team_id}", summary="Show team.", response_model=TeamRead)
-async def get_team(team: Team = Depends(get_team_by_id)):
+async def get_team(
+    team: Team = Depends(get_team_by_id),
+    user: User = Depends(current_active_verified_user),
+):
     return team
 
 
@@ -50,7 +53,6 @@ async def update_team(
     team: Team = Depends(get_team_by_id),
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_superuser),
-
 ):
     return await add_team_id_to_team_members(user_ids, team, session)
 
@@ -62,6 +64,5 @@ async def delete_team(
     team: Team = Depends(get_team_by_id),
     session: AsyncSession = Depends(dbh.session_getter),
     user: User = Depends(current_active_verified_superuser),
-
 ):
     return await remove_team(team, session)

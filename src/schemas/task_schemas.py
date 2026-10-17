@@ -19,18 +19,19 @@ class CommentCreate(BaseModel):
     text: str
 
 
-class CommentRead(CommentCreate):
+class CommentRead(BaseModel):
     """
     Comment read schema.
 
     Attributes:
-        created_at(datetime) The date and the time of the comment creation.
-        user_id (UUID): The ID of the user, who has created the comment.
-
+        text (str): The comment text.
+        created_at (datetime): The date and the time of the comment creation.
+        user_id (UUID | None): The ID of the user, who has created the comment.
     """
 
+    text: str
     created_at: datetime
-    user_id: UUID
+    user_id: UUID | None
 
 
 class TaskCreate(BaseModel):

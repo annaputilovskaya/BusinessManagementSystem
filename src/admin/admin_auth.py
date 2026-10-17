@@ -5,7 +5,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from src.auth.auth_backend import authentication_backend
-from src.auth.dependencies import get_user_manager, get_user_db
+from src.auth.dependencies import get_user_db, get_user_manager
 from src.models import dbh
 
 get_users_db_context = contextlib.asynccontextmanager(get_user_db)
@@ -108,4 +108,7 @@ class AdminAuth(AuthenticationBackend):
         token = request.session.get("admin-token")
         if not token:
             return False
-        return True
+        strategy = authentication_backend.get_strategy()
+        async with get_user_manager_instance() as user_manager:
+            user = await strategy.read_token(token, user_manager)
+        return user is not None and user.is_superuser and user.is_active

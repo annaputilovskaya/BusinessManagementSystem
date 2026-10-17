@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from src.auth.dependencies import http_bearer, current_active_verified_user
-from src.models import Task, dbh, User
-from src.schemas.evaluation_schemas import EvaluationReadSchema, EvaluationCreateSchema
-from src.services.dependencies import get_task_by_id_manager
+from src.auth.dependencies import current_active_verified_user, http_bearer
+from src.models import Task, User, dbh
+from src.schemas.evaluation_schemas import EvaluationCreateSchema, EvaluationReadSchema
 from src.services import evaluation_services
+from src.services.dependencies import get_task_by_id_manager
 
 router = APIRouter(
     prefix="/evaluations", tags=["Evaluations"], dependencies=[Depends(http_bearer)]
@@ -30,7 +30,7 @@ async def create_evaluation(
     return await evaluation_services.add_evaluation(evaluation_in, task, session)
 
 
-@router.get("/all/{user_id}", summary="Show user's evaluations.")
+@router.get("/all/{executor_id}", summary="Show user's evaluations.")
 async def get_evaluations(
     executor_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
@@ -43,7 +43,7 @@ async def get_evaluations(
     )
 
 
-@router.get("/average/{user_id}", summary="Show user's average.")
+@router.get("/average/{executor_id}", summary="Show user's average.")
 async def get_average_evaluation(
     executor_id: Annotated[UUID, Path],
     session: AsyncSession = Depends(dbh.session_getter),
