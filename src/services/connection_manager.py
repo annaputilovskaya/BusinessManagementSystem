@@ -26,7 +26,7 @@ class ConnectionManager:
 
     async def broadcast(self, task_id: UUID, payload: dict) -> None:
         """Send payload to every websocket in the given task room only."""
-        for websocket in self.active_connections.get(task_id, {}).values():
+        for websocket in list(self.active_connections.get(task_id, {}).values()):
             try:
                 await websocket.send_json(payload)
             except (WebSocketDisconnect, RuntimeError):
