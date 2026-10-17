@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -27,7 +28,6 @@ target_metadata = Base.metadata
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
-import os
 
 db_url = os.environ.get("DATABASE_URL", str(settings.db.url))
 config.set_main_option("sqlalchemy.url", db_url)
