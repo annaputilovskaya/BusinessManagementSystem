@@ -2,8 +2,10 @@ from datetime import date, timedelta
 
 from fastapi import HTTPException, status
 
+DEFAULT_START_DATE = date(2025, 1, 1)
 
-def check_dates(start_date, end_date):
+
+def check_dates(start_date: date | None, end_date: date | None) -> tuple[date, date]:
     """
     Validate start and end dates.
 
@@ -12,8 +14,8 @@ def check_dates(start_date, end_date):
         end_date (date | None): End of the period of evaluations.
 
     Returns:
-        start_date (date | None): Validated beginning of the period of evaluations.
-        end_date (date | None): Validated end of the period of evaluations.
+        start_date (date): Validated beginning of the period of evaluations.
+        end_date (date): Validated end of the period of evaluations.
 
     Raises:
         - 400 Bad Request: If start date is greater than end date.
@@ -21,7 +23,7 @@ def check_dates(start_date, end_date):
     """
 
     if not start_date:
-        start_date = date(2025, 1, 1)
+        start_date = DEFAULT_START_DATE
     if not end_date:
         end_date = date.today()
     if start_date > end_date:
