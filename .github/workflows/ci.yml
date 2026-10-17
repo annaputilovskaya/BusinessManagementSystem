@@ -70,10 +70,28 @@ jobs:
         run: poetry run alembic upgrade head
 
       - name: Test with coverage
-        run: poetry run pytest --cov=src --cov-report=xml --cov-fail-under=55
+        run: poetry run pytest --cov=src --cov-report=term-missing --cov-fail-under=55
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Coverage badge data
+        id: coverage
+        run: |
+          poetry run coverage json -o coverage.json
+          poetry run python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+
+          totals = json.load(open("coverage.json"))["totals"]
+          percent = totals["percent_covered"]
+          color = "green" if percent >= 80 else "yellow" if percent >= 55 else "red"
+          print(f"total={totals['percent_covered_display']}%")
+          print(f"color={color}")
+          PY
+
+      - name: Update coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
-          files: coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 9e13be2e22bb6c48cd869d453e37e8fa
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.total }}
+          color: ${{ steps.coverage.outputs.color }}
