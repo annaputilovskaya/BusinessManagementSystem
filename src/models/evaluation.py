@@ -37,24 +37,6 @@ class Evaluation(Base):
     )
     task: Mapped["Task"] = relationship("Task", back_populates="evaluation")
 
-    # def __init__(self, number, task_id, **kw: Any):
-    #     """
-    #     Initializes an Evaluation instance.
-    #
-    #     Args:
-    #         number (int): The evaluation score, which must be between 1 and 5.
-    #         task_id (UUID): The identifier for the associated task.
-    #         **kw (Any): Additional keyword arguments to be passed to the base class.
-    #
-    #     Raises:
-    #         ValueError: If the number is not between 1 and 5.
-    #     """
-    #     super().__init__(**kw)
-    #     if number < 1 or number > 5:
-    #         raise ValueError("Number must be between 1 and 5")
-    #     self.number = number
-    #     self.task_id = task_id
-
     def __str__(self):
         """
         Returns the string representation of the evaluation object.
